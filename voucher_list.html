@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>优惠券列表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f7fa;
+            color: #111827;
+            min-width: 100%;
+            overflow-x: hidden;
+            padding-bottom: 40px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 6px solid transparent;
+            border-image: linear-gradient(45deg, #ff0033, #ff9900, #ffff00, #0066ff) 1;
+            filter: blur(4px);
+            animation: neonBreath 0.75s linear infinite alternate;
+            z-index: 100000;
+            pointer-events: none;
+        }
+
+        @keyframes neonBreath {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .status-bar {
+            background-color: white;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .header {
+            background-color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-arrow {
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .country-selector {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #f9fafb;
+        }
+
+        .country-flag {
+            font-size: 16px;
+        }
+
+        .country-code {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .country-arrow {
+            font-size: 12px;
+            color: #666;
+            margin-left: 2px;
+        }
+
+        .tabs-section {
+            background-color: white;
+            padding: 0 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 24px;
+        }
+
+        .tab-item {
+            padding: 12px 0;
+            font-size: 14px;
+            color: #9ca3af;
+            cursor: pointer;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .tab-item.active {
+            color: #111827;
+        }
+
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #1e3a8a;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .content-section {
+            padding: 40px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .empty-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .empty-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        /* 退出确认弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-container {
+            background-color: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border: none;
+            background-color: #f3f4f6;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+
+        .modal-content {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <span>9:41</span>
+        <div style="display: flex; gap: 4px; align-items: center;">
+            <span>📶</span>
+            <span>📡</span>
+            <span>🔋</span>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-left">
+            <div class="back-arrow" onclick="showExitModal()">←</div>
+            <div class="header-title">优惠券列表</div>
+        </div>
+        <div class="country-selector">
+            <span class="country-flag" id="countryFlag">🇲🇾</span>
+            <span class="country-code" id="countryCode">MYS</span>
+            <span class="country-arrow">∨</span>
+        </div>
+    </div>
+
+    <div class="tabs-section">
+        <div class="tabs-container">
+            <div class="tab-item">还未领取</div>
+            <div class="tab-item active">已领取</div>
+            <div class="tab-item">已使用</div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="empty-icon">
+            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 优惠券图标 -->
+                <path d="M30 35C30 32.2386 32.2386 30 35 30H85C87.7614 30 90 32.2386 90 35V45C90 47.7614 87.7614 50 85 50C82.2386 50 80 52.2386 80 55V65C80 67.7614 82.2386 70 85 70C87.7614 70 90 72.2386 90 75V85C90 87.7614 87.7614 90 85 90H35C32.2386 90 30 87.7614 30 85V75C30 72.2386 32.2386 70 35 70C37.7614 70 40 67.7614 40 65V55C40 52.2386 37.7614 50 35 50C32.2386 50 30 47.7614 30 45V35Z" stroke="#374151" stroke-width="3" fill="none"/>
+                <circle cx="60" cy="60" r="8" stroke="#374151" stroke-width="3" fill="none"/>
+                <path d="M55 60L60 55L65 60" stroke="#EF4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="85" cy="25" r="12" fill="#EF4444"/>
+                <text x="85" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="bold">n</text>
+                <path d="M95 35L100 30" stroke="#F472B6" stroke-width="2" stroke-linecap="round"/>
+                <path d="M100 40L105 35" stroke="#F472B6" stroke-width="2" stroke-linecap="round"/>
+                <path d="M20 50L15 45" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 55L10 50" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="empty-text">没有优惠券</div>
+    </div>
+
+    <!-- 退出确认弹窗 -->
+    <div class="modal-overlay" id="exitModal">
+        <div class="modal-container">
+            <div class="modal-icon">🔔</div>
+            <button class="modal-close" onclick="closeExitModal()">×</button>
+            <div class="modal-title">Exit Voucher List?</div>
+            <div class="modal-content">Are you sure you want to leave this page?</div>
+            <button class="modal-btn" onclick="confirmExit()">Okay</button>
+        </div>
+    </div>
+
+    <script>
+        // 从URL参数获取国家信息
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const countryCode = urlParams.get('country') || 'MYS';
+            const countryFlag = urlParams.get('flag') || '🇲🇾';
+            
+            document.getElementById('countryCode').textContent = countryCode;
+            document.getElementById('countryFlag').textContent = countryFlag;
+        });
+
+        function showExitModal() {
+            document.getElementById('exitModal').classList.add('active');
+        }
+
+        function closeExitModal() {
+            document.getElementById('exitModal').classList.remove('active');
+        }
+
+        function confirmExit() {
+            window.location.href = 'order_for_member.html';
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('exitModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeExitModal();
+            }
+        });
+    </script>
+</body>
+</html>

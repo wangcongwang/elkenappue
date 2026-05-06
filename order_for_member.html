@@ -32,7 +32,7 @@
             border: 6px solid transparent;
             border-image: linear-gradient(45deg, #ff0033, #ff9900, #ffff00, #0066ff) 1;
             filter: blur(4px);
-            animation: neonBreath 3s linear infinite alternate;
+            animation: neonBreath 0.75s linear infinite alternate;
             z-index: 100000;
             pointer-events: none;
         }
@@ -364,16 +364,15 @@
 
         .country-dropdown {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 8px);
             right: 0;
-            margin-top: 8px;
             background-color: white;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
+            z-index: 9999;
             display: none;
-            overflow: hidden;
+            overflow: visible;
             min-width: 120px;
         }
 
@@ -417,7 +416,7 @@
             gap: 12px;
             border-bottom: 1px solid #e5e7eb;
             position: relative;
-            z-index: 10;
+            z-index: 1000;
         }
 
         .search-box {
@@ -458,6 +457,8 @@
             font-size: 14px;
             cursor: pointer;
             background-color: #f9fafb;
+            position: relative;
+            z-index: 100;
         }
 
         .header-icons {
@@ -923,6 +924,182 @@
             cursor: pointer;
             font-weight: 500;
         }
+
+        /* 蝴蝶飞出转场特效（与进入相反） */
+        .portal-overlay-exit {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #0f3460 100%);
+            z-index: 999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .portal-overlay-exit.active {
+            display: flex;
+        }
+
+        .door-container-exit {
+            position: relative;
+            width: 220px;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .door-frame-exit {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 6px solid #c9a227;
+            border-radius: 110px 110px 0 0;
+            background: linear-gradient(180deg, #2a1810 0%, #1a0f08 100%);
+            box-shadow: 
+                0 0 40px rgba(201, 162, 39, 0.4),
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .door-light-exit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 180px;
+            height: 280px;
+            background: radial-gradient(ellipse, rgba(255, 240, 200, 0.95) 0%, rgba(255, 220, 150, 0.7) 30%, rgba(255, 180, 80, 0.3) 60%, transparent 80%);
+            opacity: 1;
+            animation: light-disappear 2s ease-in forwards;
+        }
+
+        @keyframes light-disappear {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        }
+
+        .door-left-exit {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, #3d2817 0%, #5a3d26 50%, #3d2817 100%);
+            border-right: 2px solid #c9a227;
+            transform-origin: left center;
+            transform: rotateY(-110deg);
+            animation: door-close-left 2s ease-in-out forwards;
+            z-index: 10;
+        }
+
+        .door-right-exit {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, #3d2817 0%, #5a3d26 50%, #3d2817 100%);
+            border-left: 2px solid #c9a227;
+            transform-origin: right center;
+            transform: rotateY(110deg);
+            animation: door-close-right 2s ease-in-out forwards;
+            z-index: 10;
+        }
+
+        .door-handle-exit {
+            position: absolute;
+            width: 12px;
+            height: 30px;
+            background: linear-gradient(180deg, #c9a227 0%, #8b6914 100%);
+            border-radius: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .door-handle-exit.left {
+            right: 15px;
+        }
+
+        .door-handle-exit.right {
+            left: 15px;
+        }
+
+        @keyframes door-close-left {
+            0% { transform: rotateY(-110deg); }
+            100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes door-close-right {
+            0% { transform: rotateY(110deg); }
+            100% { transform: rotateY(0deg); }
+        }
+
+        /* 蝴蝶飞出（与飞入相反） */
+        .butterfly-exit {
+            position: absolute;
+            font-size: 36px;
+            z-index: 5;
+            animation: butterfly-exit 2.5s ease-in-out forwards;
+            filter: drop-shadow(0 0 8px rgba(255, 220, 150, 0.8));
+        }
+
+        @keyframes butterfly-exit {
+            0% {
+                transform: translateY(-100px) scale(0.2) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                transform: translateY(-50px) scale(0.8) rotate(-5deg);
+                opacity: 1;
+            }
+            40% {
+                transform: translateY(0px) scale(1) rotate(10deg);
+            }
+            70% {
+                transform: translateY(100px) scale(0.8) rotate(-15deg);
+            }
+            100% {
+                transform: translateY(200px) scale(0.3) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        .sparkle-exit {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, #fff 0%, #ffd700 50%, transparent 100%);
+            border-radius: 50%;
+            animation: sparkle-exit-float 2s ease-out forwards;
+        }
+
+        @keyframes sparkle-exit-float {
+            0% { transform: translate(0, 0) scale(0); opacity: 0; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1); opacity: 1; }
+        }
+
+        .portal-text-exit {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 40px;
+            text-align: center;
+            animation: text-fade-exit 1.5s ease-in-out infinite alternate;
+            text-shadow: 0 0 15px rgba(255, 220, 150, 0.6);
+        }
+
+        @keyframes text-fade-exit {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -952,7 +1129,7 @@
             <span class="search-icon">🔍</span>
             <input type="text" class="search-input" placeholder="Search Here">
         </div>
-        <div class="country-selector">
+        <div class="country-selector" onclick="toggleCountryDropdown(event)">
             <span class="country-flag" id="countryFlag">🇲🇾</span>
             <span class="country-code" id="countryCode">MY</span>
             <span class="country-arrow">∨</span>
@@ -999,68 +1176,8 @@
         </div>
     </div>
 
-    <div class="cards-section">
-        <div class="product-card etoken-product" onclick="showETokenModal()">
-            <div class="product-image-container">
-                <div class="product-etoken-badge">eToken</div>
-                <div class="product-placeholder">💊</div>
-            </div>
-            <div class="product-info">
-                <div class="product-name">eToken Premium Supplement</div>
-                <div class="product-price">MYR 72.00</div>
-                <div class="product-bv">eToken Points 72</div>
-                <button class="add-to-cart-btn" onclick="event.stopPropagation(); showETokenModal()">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card" onclick="window.location.href='product_detail.html'" style="cursor: pointer;">
-            <div class="product-image-container">
-                <div class="product-new-badge">NEW</div>
-                <div class="product-placeholder">🌿</div>
-            </div>
-            <div class="product-info">
-                <div class="product-name">Elken Spirulina</div>
-                <div class="product-price">MYR 388.00</div>
-                <div class="product-bv">BV 0.38</div>
-                <button class="add-to-cart-btn" onclick="event.stopPropagation(); window.location.href='product_detail.html'">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card" onclick="window.location.href='product_detail.html'" style="cursor: pointer;">
-            <div class="product-image-container">
-                <div class="product-placeholder">💊</div>
-            </div>
-            <div class="product-info">
-                <div class="product-name">Elfahex 30 Softgels</div>
-                <div class="product-price">MYR 388.00</div>
-                <div class="product-bv">BV 0.38</div>
-                <button class="add-to-cart-btn disabled" onclick="event.stopPropagation();">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card" onclick="window.location.href='product_detail.html'" style="cursor: pointer;">
-            <div class="product-image-container">
-                <div class="product-placeholder">🧴</div>
-            </div>
-            <div class="product-info">
-                <div class="product-name">Ginseng Essence Massage Cream</div>
-                <div class="product-price">MYR 388.00</div>
-                <div class="product-bv">BV 0.38</div>
-                <button class="add-to-cart-btn" onclick="event.stopPropagation(); window.location.href='product_detail.html'">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="product-card" onclick="window.location.href='product_detail.html'" style="cursor: pointer;">
-            <div class="product-image-container">
-                <div class="product-placeholder">🧴</div>
-            </div>
-            <div class="product-info">
-                <div class="product-name">Ginseng Essence Massage Cream</div>
-                <div class="product-price">MYR 388.00</div>
-                <div class="product-bv">BV 0.38</div>
-                <button class="add-to-cart-btn" onclick="event.stopPropagation(); window.location.href='product_detail.html'">Add to Cart</button>
-            </div>
-        </div>
+    <!-- 产品列表将通过JavaScript动态渲染 -->
+    <div class="cards-section" id="productsContainer">
     </div>
 
     <!-- 退出确认弹窗 -->
@@ -1072,6 +1189,23 @@
             <div class="modal-content">Are you sure you want to leave this page? Your current progress may not be saved.</div>
             <button class="modal-btn" onclick="confirmExit()">Okay</button>
         </div>
+    </div>
+
+    <!-- 蝴蝶飞出转场特效 -->
+    <div class="portal-overlay-exit" id="portalOverlayExit">
+        <div class="door-container-exit">
+            <div class="door-frame-exit">
+                <div class="door-light-exit"></div>
+            </div>
+            <div class="door-left-exit">
+                <div class="door-handle-exit left"></div>
+            </div>
+            <div class="door-right-exit">
+                <div class="door-handle-exit right"></div>
+            </div>
+            <div class="butterfly-exit">🦋</div>
+        </div>
+        <div class="portal-text-exit">正在退出下单页面...</div>
     </div>
 
     <!-- eToken 弹窗 -->
@@ -1139,7 +1273,13 @@
         }
 
         function confirmExit() {
-            window.location.href = 'mall.html';
+            closeExitModal();
+            const portal = document.getElementById('portalOverlayExit');
+            portal.classList.add('active');
+            
+            setTimeout(function() {
+                window.location.href = 'mall.html';
+            }, 2000);
         }
 
         // OTP 弹窗功能
@@ -1240,8 +1380,12 @@
 
             // 模拟验证 - 假设正确 OTP 是 1234
             if (otp === '1234') {
-                alert('OTP Verified: ' + otp);
                 closeOTPModal();
+                // 获取当前选中的国家信息
+                const countryCode = document.getElementById('countryCode').textContent;
+                const countryFlag = document.getElementById('countryFlag').textContent;
+                // 跳转到优惠券列表页面
+                window.location.href = `voucher_list.html?country=${countryCode}&flag=${encodeURIComponent(countryFlag)}`;
             } else {
                 showOTPError();
             }
@@ -1298,11 +1442,86 @@
             { code: 'MY', flag: '🇲🇾', name: '马来西亚' },
             { code: 'SG', flag: '🇸🇬', name: '新加坡' },
             { code: 'BN', flag: '🇧🇳', name: '文莱' },
-            { code: 'KH', flag: '🇭', name: '柬埔寨' },
-            { code: 'TH', flag: '🇭', name: '泰国' },
-            { code: 'TW', flag: '🇼', name: '台湾' },
-            { code: 'HK', flag: '🇰', name: '香港' }
+            { code: 'KH', flag: '', name: '柬埔寨' },
+            { code: 'TH', flag: '🇹', name: '泰国' },
+            { code: 'TW', flag: '🇹', name: '台湾' },
+            { code: 'HK', flag: '', name: '香港' }
         ];
+
+        // 每个国家的产品列表
+        const productsByCountry = {
+            'MY': [
+                { id: 'etoken', name: 'eToken Premium Supplement', price: 'MYR 72.00', bv: 'eToken Points 72', icon: '💊', isNew: false, isEToken: true },
+                { id: 'spirulina', name: 'Elken Spirulina', price: 'MYR 388.00', bv: 'BV 0.38', icon: '🌿', isNew: true, isEToken: false },
+                { id: 'elfahex', name: 'Elfahex 30 Softgels', price: 'MYR 388.00', bv: 'BV 0.38', icon: '💊', isNew: false, isEToken: false },
+                { id: 'ginseng', name: 'Ginseng Essence Massage Cream', price: 'MYR 388.00', bv: 'BV 0.38', icon: '🧴', isNew: false, isEToken: false },
+                { id: 'collagen', name: 'Elken Collagen Powder', price: 'MYR 288.00', bv: 'BV 0.28', icon: '✨', isNew: false, isEToken: false }
+            ],
+            'SG': [
+                { id: 'etoken', name: 'eToken Premium Supplement', price: 'SGD 72.00', bv: 'eToken Points 72', icon: '💊', isNew: false, isEToken: true },
+                { id: 'spirulina', name: 'Elken Spirulina', price: 'SGD 388.00', bv: 'BV 0.38', icon: '🌿', isNew: true, isEToken: false },
+                { id: 'birdnest', name: 'Elken Bird Nest', price: 'SGD 458.00', bv: 'BV 0.45', icon: '🍯', isNew: false, isEToken: false },
+                { id: 'ginseng', name: 'Ginseng Essence Massage Cream', price: 'SGD 388.00', bv: 'BV 0.38', icon: '🧴', isNew: false, isEToken: false },
+                { id: 'vitamin', name: 'Elken Multi-Vitamin', price: 'SGD 188.00', bv: 'BV 0.18', icon: '💊', isNew: true, isEToken: false }
+            ],
+            'BN': [
+                { id: 'etoken', name: 'eToken Premium Supplement', price: 'BND 72.00', bv: 'eToken Points 72', icon: '💊', isNew: false, isEToken: true },
+                { id: 'spirulina', name: 'Elken Spirulina', price: 'BND 388.00', bv: 'BV 0.38', icon: '🌿', isNew: true, isEToken: false },
+                { id: 'elfahex', name: 'Elfahex 30 Softgels', price: 'BND 388.00', bv: 'BV 0.38', icon: '💊', isNew: false, isEToken: false },
+                { id: 'honey', name: 'Elken Honey Plus', price: 'BND 158.00', bv: 'BV 0.15', icon: '', isNew: false, isEToken: false },
+                { id: 'collagen', name: 'Elken Collagen Powder', price: 'BND 288.00', bv: 'BV 0.28', icon: '✨', isNew: false, isEToken: false }
+            ],
+            'KH': [
+                { id: 'etoken', name: 'eToken Premium Supplement', price: 'KHR 72,000', bv: 'eToken Points 72', icon: '', isNew: false, isEToken: true },
+                { id: 'spirulina', name: 'Elken Spirulina', price: 'KHR 388,000', bv: 'BV 0.38', icon: '🌿', isNew: true, isEToken: false },
+                { id: 'elfahex', name: 'Elfahex 30 Softgels', price: 'KHR 388,000', bv: 'BV 0.38', icon: '💊', isNew: false, isEToken: false },
+                { id: 'ginseng', name: 'Ginseng Essence Massage Cream', price: 'KHR 388,000', bv: 'BV 0.38', icon: '🧴', isNew: false, isEToken: false },
+                { id: 'tea', name: 'Elken Herbal Tea', price: 'KHR 128,000', bv: 'BV 0.12', icon: '🍵', isNew: true, isEToken: false }
+            ],
+            'TH': [
+                { id: 'etoken', name: 'eToken Premium Supplement', price: 'THB 720', bv: 'eToken Points 72', icon: '💊', isNew: false, isEToken: true },
+                { id: 'spirulina', name: 'Elken Spirulina', price: 'THB 3,880', bv: 'BV 0.38', icon: '🌿', isNew: true, isEToken: false },
+                { id: 'elfahex', name: 'Elfahex 30 Softgels', price: 'THB 3,880', bv: 'BV 0.38', icon: '💊', isNew: false, isEToken: false },
+                { id: 'ginseng', name: 'Ginseng Essence Massage Cream', price: 'THB 3,880', bv: 'BV 0.38', icon: '', isNew: false, isEToken: false },
+                { id: 'birdnest', name: 'Elken Bird Nest', price: 'THB 4,580', bv: 'BV 0.45', icon: '🍯', isNew: false, isEToken: false }
+            ],
+            'TW': [
+                { id: 'etoken', name: 'eToken Premium Supplement', price: 'TWD 720', bv: 'eToken Points 72', icon: '💊', isNew: false, isEToken: true },
+                { id: 'spirulina', name: 'Elken Spirulina', price: 'TWD 3,880', bv: 'BV 0.38', icon: '', isNew: true, isEToken: false },
+                { id: 'elfahex', name: 'Elfahex 30 Softgels', price: 'TWD 3,880', bv: 'BV 0.38', icon: '💊', isNew: false, isEToken: false },
+                { id: 'ginseng', name: 'Ginseng Essence Massage Cream', price: 'TWD 3,880', bv: 'BV 0.38', icon: '', isNew: false, isEToken: false },
+                { id: 'collagen', name: 'Elken Collagen Powder', price: 'TWD 2,880', bv: 'BV 0.28', icon: '✨', isNew: false, isEToken: false }
+            ],
+            'HK': [
+                { id: 'etoken', name: 'eToken Premium Supplement', price: 'HKD 72.00', bv: 'eToken Points 72', icon: '💊', isNew: false, isEToken: true },
+                { id: 'spirulina', name: 'Elken Spirulina', price: 'HKD 388.00', bv: 'BV 0.38', icon: '🌿', isNew: true, isEToken: false },
+                { id: 'birdnest', name: 'Elken Bird Nest', price: 'HKD 458.00', bv: 'BV 0.45', icon: '🍯', isNew: false, isEToken: false },
+                { id: 'ginseng', name: 'Ginseng Essence Massage Cream', price: 'HKD 388.00', bv: 'BV 0.38', icon: '🧴', isNew: false, isEToken: false },
+                { id: 'vitamin', name: 'Elken Multi-Vitamin', price: 'HKD 188.00', bv: 'BV 0.18', icon: '💊', isNew: true, isEToken: false }
+            ]
+        };
+
+        // 渲染产品列表
+        function renderProducts(countryCode) {
+            const products = productsByCountry[countryCode] || productsByCountry['MY'];
+            const container = document.getElementById('productsContainer');
+            
+            container.innerHTML = products.map(product => `
+                <div class="product-card ${product.isEToken ? 'etoken-product' : ''}" onclick="${product.isEToken ? 'showETokenModal()' : "window.location.href='product_detail.html'"}">
+                    <div class="product-image-container">
+                        ${product.isNew ? '<div class="product-new-badge">NEW</div>' : ''}
+                        ${product.isEToken ? '<div class="product-etoken-badge">eToken</div>' : ''}
+                        <div class="product-placeholder">${product.icon}</div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">${product.price}</div>
+                        <div class="product-bv">${product.bv}</div>
+                        <button class="add-to-cart-btn" onclick="event.stopPropagation(); ${product.isEToken ? 'showETokenModal()' : "window.location.href='product_detail.html'"}">Add to Cart</button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         // 为每个会员随机分配2-3个国家
         function getRandomCountries(memberId) {
@@ -1330,6 +1549,8 @@
             if (memberCountries.length > 0) {
                 flagEl.textContent = memberCountries[0].flag;
                 codeEl.textContent = memberCountries[0].code;
+                // 渲染第一个国家的产品
+                renderProducts(memberCountries[0].code);
             }
             
             dropdown.innerHTML = memberCountries.map((country, index) => `
@@ -1355,10 +1576,14 @@
             element.classList.add('selected');
             
             dropdown.classList.remove('active');
+            
+            // 切换国家后更新产品列表
+            renderProducts(code);
         }
 
         // 切换国家下拉菜单
-        function toggleCountryDropdown() {
+        function toggleCountryDropdown(e) {
+            e.stopPropagation();
             const dropdown = document.getElementById('countryDropdown');
             dropdown.classList.toggle('active');
         }
@@ -1367,7 +1592,7 @@
         document.addEventListener('click', function(e) {
             const countrySelector = document.querySelector('.country-selector');
             const dropdown = document.getElementById('countryDropdown');
-            if (countrySelector && !countrySelector.contains(e.target)) {
+            if (countrySelector && dropdown && !countrySelector.contains(e.target)) {
                 dropdown.classList.remove('active');
             }
         });

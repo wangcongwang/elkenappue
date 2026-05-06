@@ -21,26 +21,6 @@
             padding-bottom: 40px;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 6px solid transparent;
-            border-image: linear-gradient(45deg, #ff0033, #ff9900, #ffff00, #0066ff) 1;
-            filter: blur(4px);
-            animation: neonBreath 3s linear infinite alternate;
-            z-index: 100000;
-            pointer-events: none;
-        }
-
-        @keyframes neonBreath {
-            0% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-
         .status-bar {
             background-color: white;
             padding: 8px 16px;
