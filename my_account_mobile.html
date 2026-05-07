@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>elken app重构版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary-color: #0066cc;
@@ -919,7 +920,7 @@
             <div class="tab-item" data-target="address">Address</div>
             <div class="tab-item" data-target="bonus">Bonus</div>
             <div class="tab-item" data-target="placement">Placement</div>
-            <div class="tab-item" data-target="policies">e-form</div>
+            <div class="tab-item stockist-only-tab" data-target="policies" style="display: none;">e-form</div>
         </div>
     </div>
 
@@ -1006,6 +1007,16 @@
                 <div class="data-row">
                     <div class="data-label">Income Tax Country</div>
                     <div class="data-value">Malaysia</div>
+                </div>
+            </div>
+
+            <!-- 测试按钮区域 - 仅在 Business Info 下显示 -->
+            <div style="margin-top: 30px; padding: 20px; background-color: #fef3c7; border-radius: 12px; border: 2px dashed #f59e0b;">
+                <div style="font-size: 14px; font-weight: 600; color: #92400e; margin-bottom: 12px;">🧪 测试功能（仅开发测试使用）</div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="testAsNonStockist()" style="padding: 8px 16px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px;">测试：非Stockist（弹申请表）</button>
+                    <button onclick="testAsStockist()" style="padding: 8px 16px; background-color: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px;">测试：Stockist（看e-form）</button>
+                    <button onclick="resetTestData()" style="padding: 8px 16px; background-color: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px;">重置所有数据</button>
                 </div>
             </div>
         </div>
@@ -1805,16 +1816,24 @@
         </div>
 
 
-        <!-- e-form -->
+        <!-- e-form - 仅stockist可见，独立的标签页 -->
         <div id="policies" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">e-form</div>
-                </div>
-                <div class="data-row" style="cursor: pointer;">
-                    <div class="data-label">e-form</div>
-                    <div class="data-value">
-                        <a href="policy_detail.html" style="color: var(--primary-color); text-decoration: none;">Download</a>
+            <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 20px;">
+                <div style="font-size: 18px; font-weight: 600; text-align: center; margin-bottom: 20px; color: #111827;">e-Form</div>
+                
+                <!-- E-Form 列表容器 - JavaScript会在这里加载内容 -->
+                <div id="dealerFormList">
+                    <!-- 默认显示 E-Form 列表项 -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                        <div style="font-size: 15px; color: #374151;">E-Form</div>
+                        <a href="#" onclick="downloadDealerPDF(); return false;" style="display: flex; align-items: center; gap: 6px; color: #0066cc; text-decoration: none; font-size: 14px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Download</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -3107,380 +3126,409 @@
         });
     </script>
 
-    <!-- 经销商申请表单弹窗 -->
+    <!-- 经销商申请条款弹窗 -->
     <div class="dealer-modal-overlay" id="dealerModal">
-        <div class="dealer-modal-container">
+        <div class="dealer-modal-container pdf-terms-container">
             <div class="dealer-modal-header">
                 <div class="dealer-modal-title">经销商申请表</div>
                 <button class="dealer-modal-close" onclick="closeDealerModal()">×</button>
             </div>
-            <div class="dealer-modal-body">
-                <div class="pdf-preview-info">
-                    <div class="info-hint">以下信息将自动填充到经销商申请表PDF中</div>
-                </div>
-                <form id="dealerForm">
-                    <!-- 申请人信息 -->
-                    <div class="form-section">
-                        <div class="form-section-title">申请人信息（系统自动填充）</div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">姓名</label>
-                                <input type="text" id="dealerName" class="form-control" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">会员ID</label>
-                                <input type="text" id="dealerMemberId" class="form-control" readonly>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">身份证号</label>
-                                <input type="text" id="dealerIdCard" class="form-control" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">联系电话</label>
-                                <input type="tel" id="dealerPhone" class="form-control" readonly>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group form-group-full">
-                                <label class="form-label">地址</label>
-                                <textarea id="dealerAddress" class="form-control" rows="2" readonly></textarea>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">城市</label>
-                                <input type="text" id="dealerCity" class="form-control" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">邮编</label>
-                                <input type="text" id="dealerPostcode" class="form-control" readonly>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">国家</label>
-                                <input type="text" id="dealerCountry" class="form-control" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">出生日期</label>
-                                <input type="text" id="dealerBirthDate" class="form-control" readonly>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">性别</label>
-                                <input type="text" id="dealerGender" class="form-control" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">邮箱</label>
-                                <input type="text" id="dealerEmail" class="form-control" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 推荐人信息 -->
-                    <div class="form-section">
-                        <div class="form-section-title">推荐人信息（系统自动填充）</div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">推荐人姓名</label>
-                                <input type="text" id="dealerSponsorName" class="form-control" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">推荐人ID</label>
-                                <input type="text" id="dealerSponsorId" class="form-control" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 银行信息 -->
-                    <div class="form-section">
-                        <div class="form-section-title">银行信息（系统自动填充）</div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">银行名称</label>
-                                <input type="text" id="dealerBankName" class="form-control" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">银行账号</label>
-                                <input type="text" id="dealerBankAccount" class="form-control" readonly>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group form-group-full">
-                                <label class="form-label">账户持有人姓名</label>
-                                <input type="text" id="dealerBankHolder" class="form-control" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 确认条款 -->
-                    <div class="form-checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="agreeTerms" class="checkbox-input">
-                            <span class="checkbox-text">我确认以上信息真实有效，并同意经销商条款</span>
-                        </label>
-                    </div>
-                </form>
-            </div>
-            <div class="dealer-modal-footer">
-                <button class="btn btn-secondary" onclick="closeDealerModal()">取消</button>
-                <button class="btn btn-primary" id="dealerNextBtn" onclick="showPDFTerms()" disabled>查看条款并继续</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PDF条款预览弹窗 -->
-    <div class="dealer-modal-overlay" id="pdfTermsModal">
-        <div class="dealer-modal-container pdf-terms-container">
-            <div class="dealer-modal-header">
-                <div class="dealer-modal-title">经销商申请条款</div>
-                <button class="dealer-modal-close" onclick="closePDFTerms()">×</button>
-            </div>
             <div class="dealer-modal-body pdf-terms-body">
-                <div class="terms-document">
-                    <div class="terms-header">
-                        <div class="terms-logo">ELKEN</div>
-                        <div class="terms-title">DEALER APPLICATION FORM</div>
-                        <div class="terms-subtitle">经销商申请表 / BORANG PERMOHONAN PENGEGAR</div>
+                <div class="terms-document" style="font-family: Arial, sans-serif; color: #003366; line-height: 1.4;">
+                    <!-- 表头 -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 3px solid #003366;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 80px; height: 40px; background: linear-gradient(135deg, #e91e63, #9c27b0); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">ELKEN</div>
+                        </div>
+                        <div style="text-align: right; font-size: 10px; color: #003366;">
+                            Form No.: CS-F05<br>Rev No.: F
+                        </div>
                     </div>
                     
-                    <div class="terms-content">
-                        <div class="terms-section">
-                            <h3>TERMS OF AGREEMENT / 条款协议 / SYARAT-SYARAT PERJANJIAN</h3>
-                            
-                            <div class="terms-item">
-                                <p><strong>1.</strong> I am 18 years old and above and eligible to apply to Company as its Dealer.</p>
-                                <p class="terms-cn">我已满18岁及以上，有资格申请成为公司经销商。</p>
-                                <p class="terms-bm">Saya berusia 18 tahun dan ke atas dan berkelayakan untuk memohon kepada Syarikat sebagai Pengegar.</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>2.</strong> I have read and agree to comply with the terms herein, Elken Dealers' Rules and Regulations ("R&R"), Elken Marketing Plan (collectively referred to as the "Agreement"), Direct Sales & Anti-Pyramid Scheme Act 1993 (Act 500), and any applicable regulations and relevant laws.</p>
-                                <p class="terms-cn">我已阅读并同意遵守本条款、经销商规则条例（"R&R"）、营销计划（统称"协议"）、1993年直销及反金字塔计划法令及相关法律法规。</p>
-                                <p class="terms-bm">Saya telah membaca dan bersetuju untuk mematuhi terma-terma di sini, Peraturan dan Undang-undang Pengegar Elken ("R&R"), Pelan Pemasaran Elken (secara kolektif dirujuk sebagai "Perjanjian"), Akta Jualan Langsung & Skim Anti-Piramid 1993 (Akta 500), dan mana-mana peraturan dan undang-undang yang berkaitan.</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>3.</strong> This application is strictly by a natural person, not company or organization, and the Company reserves the right to accept or reject this application for any reason whatsoever at its discretion.</p>
-                                <p class="terms-cn">本申请仅限个人，不适用于公司或组织，公司保留接受或拒绝申请的权利。</p>
-                                <p class="terms-bm">Permohonan ini adalah secara ketat oleh perseorangan, bukan syarikat atau organisasi, dan Syarikat berhak untuk menerima atau menolak permohonan ini atas apa-apa sebab sekalipun.</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>4.</strong> I understand that I am responsible for any errors contained therein and may result in termination of this Agreement.</p>
-                                <p class="terms-cn">我理解我对其中包含的任何错误负责，可能导致本协议终止。</p>
-                                <p class="terms-bm">Saya faham bahawa saya bertanggungjawab terhadap sebarang kesilapan yang terkandung di dalamnya dan boleh mengakibatkan penamatan Perjanjian ini.</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>5.</strong> I consent to the processing of my personal data in accordance with the Elken's Personal Data Protection Notice as stated in Elken's website at www.elken.com</p>
-                                <p class="terms-cn">我同意根据爱康个人数据保护通知处理我的个人数据，详见www.elken.com</p>
-                                <p class="terms-bm">Saya bersetuju kepada pemprosesan data peribadi saya selaras dengan Notis Perlindungan Data Peribadi Elken seperti yang dinyatakan dalam laman web www.elken.com</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>6.</strong> The term of this Agreement is 1 year. If I fail to accumulate thirty (30) BV over 12 months, or if my dealership is cancelled or terminated for any reason, I understand that I shall no longer be entitled to the status of my dealership and all benefits and entitlements under the Elken Marketing Plan shall be forfeited.</p>
-                                <p class="terms-cn">本协议期限为1年。如果我无法在12个月内累积30 BV，或经销商资格被取消，我将不再享有经销商身份及所有权益。</p>
-                                <p class="terms-bm">Tempoh Perjanjian ini adalah selama 1 tahun. Jika saya gagal mengumpul tiga puluh (30) BV dalam tempoh 12 bulan, atau jika kelayakan Pengegar saya dibatalkan atau ditamatkan atas apa-apa sebab, saya faham bahawa saya tidak lagi berhak memiliki status Pengegar dan semua faedah dan kelayakan di bawah Pelan Pemasaran Elken akan terbatal.</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>7.</strong> The Company reserves the right to terminate this Agreement upon 30 days notice if the Company elects to: cease business operations; dissolve as a business entity; or terminate distribution of its products and/or services via direct selling channels.</p>
-                                <p class="terms-cn">公司保留在以下情况下提前30天通知终止本协议的权利：停止营业、解散业务实体、或终止直销渠道。</p>
-                                <p class="terms-bm">Syarikat berhak untuk menamatkan Perjanjian ini dengan notis 30 hari jika Syarikat memilih untuk: menamatkan operasi perniagaan; membubarkan sebagai entiti perniagaan; atau menamatkan pengedaran produk dan/atau perkhidmatan melalui saluran jualan langsung.</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>8.</strong> I understand that this Agreement may be amended at Company's sole discretion, and I agree to abide by all such amendments thereof.</p>
-                                <p class="terms-cn">我理解本协议可由公司自行修订，我同意遵守所有修订条款。</p>
-                                <p class="terms-bm">Saya faham bahawa Perjanjian ini boleh dipinda mengikut budi bicara Syarikat, dan saya bersetuju untuk mematuhi semua pindaan tersebut.</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>9.</strong> This Agreement shall be governed by and construed in accordance with the laws of Malaysia.</p>
-                                <p class="terms-cn">本协议受马来西亚法律管辖并按其解释。</p>
-                                <p class="terms-bm">Perjanjian ini akan ditadbir dan ditafsirkan mengikut undang-undang Malaysia.</p>
-                            </div>
-                            
-                            <div class="terms-item">
-                                <p><strong>10.</strong> In the event of any inconsistency amongst English, Chinese and Bahasa Malaysia versions of this Agreement, the English version shall prevail.</p>
-                                <p class="terms-cn">如英文、中文和马来文版本有任何不一致，以英文版本为准。</p>
-                                <p class="terms-bm">Sekiranya terdapat sebarang percanggahan antara versi Bahasa Inggeris, Bahasa Cina dan Bahasa Malaysia Perjanjian ini, versi Bahasa Inggeris akan diutamakan.</p>
-                            </div>
-                        </div>
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 28px; font-weight: bold; color: #003366; margin-bottom: 3px;">DEALER APPLICATION FORM</div>
+                        <div style="font-size: 11px; color: #003366;">PLEASE FILL IN USING BLOCK LETTERS / 请用大写字母填写 / SILA ISI DENGAN HURUF BESAR</div>
+                    </div>
+
+                    <!-- APPLICANT'S PARTICULARS -->
+                    <div style="background-color: #003366; color: white; padding: 5px 10px; font-weight: bold; font-size: 12px; margin-bottom: 10px;">
+                        APPLICANT'S PARTICULARS / 申请者资料 / BUTIR-BUTIR PEMOHON
+                    </div>
+                    
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;">
+                        <tr>
+                            <td colspan="4" style="padding: 3px 0;">
+                                <div style="color: #003366; font-size: 9px;">NAME OF APPLICANT (As per NRIC / Passport)</div>
+                                <div style="color: #666; font-size: 8px;">申请者姓名（按照身份证/护照）/ NAMA PEMOHON (Seperti di dalam NRIC / Pasport)</div>
+                                <div id="dealerFormName" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 25%; padding: 3px 5px 3px 0; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">NATIONALITY</div>
+                                <div style="color: #666; font-size: 8px;">国籍 / WARGANEGARA</div>
+                                <div id="dealerFormCountry" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                            <td style="width: 25%; padding: 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">DATE OF BIRTH</div>
+                                <div style="color: #666; font-size: 8px;">出生日期 / TARIKH LAHIR</div>
+                                <div id="dealerFormBirthDate" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                            <td style="width: 25%; padding: 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">GENDER</div>
+                                <div style="color: #666; font-size: 8px;">性别 / JANTINA</div>
+                                <div id="dealerFormGender" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                            <td style="width: 25%; padding: 3px 0 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">MARITAL STATUS</div>
+                                <div style="color: #666; font-size: 8px;">婚姻状况 / STATUS PERKAHWINAN</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;">-</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 3px 5px 3px 0; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">NEW I/C NO. / PASSPORT NO.</div>
+                                <div style="color: #666; font-size: 8px;">新身份证号码/护照号码 / NO. K/P BARU / NO. PASPORT</div>
+                                <div id="dealerFormIdCard" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                            <td colspan="2" style="padding: 3px 0 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">CONTACT NUMBER</div>
+                                <div style="color: #666; font-size: 8px;">电话号码 / NOMBOR TELEFON</div>
+                                <div id="dealerFormPhone" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="padding: 3px 0;">
+                                <div style="color: #003366; font-size: 9px;">EMAIL</div>
+                                <div style="color: #666; font-size: 8px;">电子邮件 / E-MEL</div>
+                                <div id="dealerFormEmail" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="padding: 3px 0;">
+                                <div style="color: #003366; font-size: 9px;">ADDRESS</div>
+                                <div style="color: #666; font-size: 8px;">邮寄地址 / ALAMAT</div>
+                                <div id="dealerFormAddress" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 5px 3px 0; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">CITY</div>
+                                <div style="color: #666; font-size: 8px;">城市 / BANDAR</div>
+                                <div id="dealerFormCity" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                            <td style="padding: 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">STATE</div>
+                                <div style="color: #666; font-size: 8px;">州属 / NEGERI</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;">-</div>
+                            </td>
+                            <td style="padding: 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">COUNTRY</div>
+                                <div style="color: #666; font-size: 8px;">国家 / NEGARA</div>
+                                <div id="dealerFormCountry2" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                            <td style="padding: 3px 0 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">POSTCODE</div>
+                                <div style="color: #666; font-size: 8px;">邮区 / POSKOD</div>
+                                <div id="dealerFormPostcode" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- DELIVERY DETAILS -->
+                    <div style="background-color: #003366; color: white; padding: 5px 10px; font-weight: bold; font-size: 12px; margin-bottom: 10px; margin-top: 15px;">
+                        DELIVERY DETAILS / 交货详情 / MAKLUMAT PENGHANTARAN (If different from above / 如与以上不同 / Jika berbeza dengan atas)
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;">
+                        <tr>
+                            <td colspan="3" style="padding: 3px 0;">
+                                <div style="color: #003366; font-size: 9px;">RECIPIENT NAME</div>
+                                <div style="color: #666; font-size: 8px;">收件人姓名 / NAMA PENERIMA</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px;">-</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 33%; padding: 3px 5px 3px 0; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">OFFICE TELEPHONE</div>
+                                <div style="color: #666; font-size: 8px;">电话（办公室）/ TELEFON PEJABAT</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px;">-</div>
+                            </td>
+                            <td style="width: 33%; padding: 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">HOUSE TELEPHONE</div>
+                                <div style="color: #666; font-size: 8px;">电话（住家）/ TELEFON KEDIAMAN</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px;">-</div>
+                            </td>
+                            <td style="width: 34%; padding: 3px 0 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">HANDPHONE</div>
+                                <div style="color: #666; font-size: 8px;">手提电话 / TELEFON BIMBIT</div>
+                                <div id="dealerFormPhone2" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="padding: 3px 0;">
+                                <div style="color: #003366; font-size: 9px;">DELIVERY ADDRESS</div>
+                                <div style="color: #666; font-size: 8px;">收货地址 / ALAMAT PENGHANTARAN</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px;">-</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- SPONSOR'S PARTICULARS -->
+                    <div style="background-color: #003366; color: white; padding: 5px 10px; font-weight: bold; font-size: 12px; margin-bottom: 10px; margin-top: 15px;">
+                        SPONSOR'S PARTICULARS / 推荐人资料 / MAKLUMAT PENAJA
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;">
+                        <tr>
+                            <td colspan="2" style="padding: 3px 0;">
+                                <div style="color: #003366; font-size: 9px;">NAME OF SPONSOR</div>
+                                <div style="color: #666; font-size: 8px;">推荐人姓名 / NAMA PENAJA</div>
+                                <div id="dealerFormSponsorName" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%; padding: 3px 5px 3px 0; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">NEW I/C NO. / PASSPORT NO.</div>
+                                <div style="color: #666; font-size: 8px;">新身份证号码/护照号码 / NO. K/P BARU / NO. PASPORT</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px;">-</div>
+                            </td>
+                            <td style="width: 50%; padding: 3px 0 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">CONTACT NUMBER</div>
+                                <div style="color: #666; font-size: 8px;">电话号码 / NOMBOR TELEFON</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px;">-</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 3px 0;">
+                                <div style="color: #003366; font-size: 9px;">SPONSOR ID</div>
+                                <div style="color: #666; font-size: 8px;">推荐人ID / NO. ID PENAJA</div>
+                                <div id="dealerFormSponsorId" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- PLACEMENT TREE PARTICULARS -->
+                    <div style="background-color: #003366; color: white; padding: 5px 10px; font-weight: bold; font-size: 12px; margin-bottom: 10px; margin-top: 15px;">
+                        PLACEMENT TREE PARTICULARS / 安置组织资料 / MAKLUMAT PENGATURAN
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;">
+                        <tr>
+                            <td style="width: 33%; padding: 3px 5px 3px 0;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <div style="width: 15px; height: 15px; border: 1px solid #003366;"></div>
+                                    <div>
+                                        <div style="color: #003366; font-size: 9px;">AUTO</div>
+                                        <div style="color: #666; font-size: 8px;">自动 / AUTO</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width: 33%; padding: 3px 5px;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <div style="width: 15px; height: 15px; border: 1px solid #003366;"></div>
+                                    <div>
+                                        <div style="color: #003366; font-size: 9px;">LEFT</div>
+                                        <div style="color: #666; font-size: 8px;">左边 / KIRI</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width: 34%; padding: 3px 0 3px 5px;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <div style="width: 15px; height: 15px; border: 1px solid #003366;"></div>
+                                    <div>
+                                        <div style="color: #003366; font-size: 9px;">RIGHT</div>
+                                        <div style="color: #666; font-size: 8px;">右边 / KANAN</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- BONUS PAYMENT DETAILS -->
+                    <div style="background-color: #003366; color: white; padding: 5px 10px; font-weight: bold; font-size: 12px; margin-bottom: 10px; margin-top: 15px;">
+                        BONUS PAYMENT DETAILS / 奖金发放资料 / MAKLUMAT BAYARAN BONUS
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;">
+                        <tr>
+                            <td colspan="3" style="padding: 3px 0;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <div style="width: 15px; height: 15px; border: 1px solid #003366;"></div>
+                                    <div style="color: #003366; font-size: 9px;">BY ONLINE BANKING / 网上银行业务 / MELALUI PERBANKAN DALAM TALIAN</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 3px 5px 3px 0; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">BANK NAME</div>
+                                <div style="color: #666; font-size: 8px;">银行名称 / NAMA BANK</div>
+                                <div id="dealerFormBankName" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                            <td style="padding: 3px 0 3px 5px; vertical-align: top;">
+                                <div style="color: #003366; font-size: 9px;">BANK ACCOUNT NUMBER</div>
+                                <div style="color: #666; font-size: 8px;">户口号码 / NOMBOR AKAUN BANK</div>
+                                <div id="dealerFormBankAccount" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="padding: 3px 0;">
+                                <div style="color: #003366; font-size: 9px;">BANK ACCOUNT HOLDER NAME*</div>
+                                <div style="color: #666; font-size: 8px;">账户持有人姓名* / NAMA PEMEGANG AKAUN BANK*</div>
+                                <div id="dealerFormBankHolder" style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px; font-size: 11px;"></div>
+                                <div style="color: #666; font-size: 8px; margin-top: 2px;">* Must be the Applicant's name and it could either be the Applicant's single or joint bank account. *必须是申请人名称的单个或联合账户。* Mesti atas nama pemohon sama ada akaun tunggal atau akaun gabungan.</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- COOLING-OFF PERIOD -->
+                    <div style="background-color: #c5d9f1; border: 2px solid #003366; padding: 10px; margin: 15px 0; text-align: center;">
+                        <div style="font-weight: bold; color: #003366; font-size: 11px;">THIS CONTRACT IS SUBJECT TO A COOLING-OFF PERIOD OF TEN WORKING DAYS / *SEVEN WORKING DAYS FOR MALAYSIA & SINGAPORE RESPECTIVELY</div>
+                    </div>
+
+                    <!-- DECLARATION -->
+                    <div style="background-color: #003366; color: white; padding: 5px 10px; font-weight: bold; font-size: 12px; margin-bottom: 10px; margin-top: 15px;">
+                        DECLARATION / 声明 / AKUAN
+                    </div>
+                    <div style="font-size: 9px; color: #003366; line-height: 1.5; margin-bottom: 10px;">
+                        I confirm that all the information provided in this Application Form is correct, accurate and complete and I have read and understood the Terms of Agreement on the back of this Application, and consent to the processing of my personal data in accordance with Elken Sdn. Bhd. ("Company") Personal Data Protection Notice stated in Elken's website at www.elken.com<br><br>
+                        我确认所提供的申请表上的所有信息都是正确、准确和完整的。我已阅读并理解表格背面的协议条款，并同意公司根据爱康官网www.elken.com 上所阐明的个人数据保护法令对我的个人数据进行收集和处理。<br><br>
+                        <em>Saya mengesahkan bahawa semua maklumat yang diberikan dalam borang ini adalah betul, tepat dan lengkap dan saya telah membaca dan memahami semua Terma Perjanjian permohonan ini dan bersetuju dengan pemprosesan data peribadi saya berdasarkan Notis Data Perlindungan Peribadi Elken Sdn. Bhd. ("Syarikat") yang dinyatakan dalam laman web di www.elken.com</em>
+                    </div>
+
+                    <!-- SIGNATURE SECTION -->
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 15px;">
+                        <tr>
+                            <td style="width: 40%; padding: 5px; border-top: 1px solid #003366;">
+                                <div style="color: #003366; font-size: 9px;">APPLICANT SIGNATURE</div>
+                                <div style="color: #666; font-size: 8px;">申请者签名 / TANDATANGAN PEMOHON</div>
+                            </td>
+                            <td style="width: 30%; padding: 5px; border-top: 1px solid #003366;">
+                                <div style="color: #003366; font-size: 9px;">DATE</div>
+                                <div style="color: #666; font-size: 8px;">日期 / TARIKH</div>
+                            </td>
+                            <td style="width: 30%; padding: 5px; border-top: 1px solid #003366; border-left: 2px solid #003366;">
+                                <div style="color: #003366; font-size: 9px;">HANDLED BY (To Stamp & Sign)</div>
+                                <div style="color: #666; font-size: 8px;">处理者（盖章及签名）</div>
+                                <div style="text-align: center; margin-top: 5px; font-size: 8px;">(STOCKIST / BRANCH / HEAD OFFICE)</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 20px 5px 5px; border-bottom: 1px solid #003366;"></td>
+                            <td style="padding: 20px 5px 5px; border-bottom: 1px solid #003366;"></td>
+                            <td style="padding: 5px; border-left: 2px solid #003366;">
+                                <div style="color: #003366; font-size: 9px;">DATE RECEIVED</div>
+                                <div style="color: #666; font-size: 8px;">收到日期</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px;"></div>
+                                <div style="color: #003366; font-size: 9px; margin-top: 5px;">DEALERSHIP ID</div>
+                                <div style="color: #666; font-size: 8px;">经销商编号</div>
+                                <div style="border-bottom: 1px solid #003366; padding: 3px 0; min-height: 18px;"></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- TERMS OF AGREEMENT -->
+                    <div style="background-color: #003366; color: white; padding: 5px 10px; font-weight: bold; font-size: 12px; margin-bottom: 10px; margin-top: 20px;">
+                        TERMS OF AGREEMENT / 条款协议 / SYARAT-SYARAT PERJANJIAN
+                    </div>
+                    <div style="font-size: 9px; color: #003366; line-height: 1.5; margin-bottom: 10px;">
+                        <p style="margin-bottom: 5px;"><strong>1.</strong> I am 18 years old and above and eligible to apply to Company as its Dealer.</p>
+                        <p style="margin-bottom: 5px;"><strong>2.</strong> I have read and agree to comply with the terms herein, Elken Dealers' Rules and Regulations ("R&R"), Elken Marketing Plan (collectively referred to as the "Agreement"), Direct Sales & Anti-Pyramid Scheme Act 1993 (Act 500) and any applicable regulations and relevant laws. I understand that I must not be in violation of the Agreement, to be eligible for commissions and/or bonuses payable under Elken Marketing Plan.</p>
+                        <p style="margin-bottom: 5px;"><strong>3.</strong> This application is strictly by a natural person, not company or organization, and the Company reserves the right to accept or reject this application for any reason whatsoever at its discretion including but not limited to incomplete/inaccurate information provided herein. I understand that any intentional misrepresentation of any information I provide in this application, the Company will not be responsible for any errors contained therein and may result in termination of this Agreement.</p>
+                        <p style="margin-bottom: 5px;"><strong>4.</strong> For the purpose of this Agreement, I consent that the Company shall use, collect and process my personal data in accordance to the Elken's Personal Data Protection Notice as stated in Elken's website at www.elken.com</p>
+                        <p style="margin-bottom: 5px;"><strong>5.</strong> The term of this Agreement is 1 year. If I fail to accumulate thirty (30) BV over 12 months, or if my dealership is cancelled or terminated for any reason, I understand that I shall no longer be entitled to the status of my dealership and all benefits and entitlements under the Elken Marketing Plan shall be forfeited.</p>
+                        <p style="margin-bottom: 5px;"><strong>6.</strong> The Company reserves the right to terminate this Agreement upon 30 days notice if the Company elects to:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;i. cease business operations;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;ii. dissolve as a business entity; or<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;iii. terminate distribution of its products and/or services via direct selling channels. Dealers may terminate this Agreement at any time, and for any reason, upon written notice to the Company at its principal business address.</p>
+                        <p style="margin-bottom: 5px;"><strong>7.</strong> I understand that this Agreement may be amended at Company's sole discretion, and I agree to abide by all such amendments thereof. Amendments will be posted by the Company at Dealers' portal and shall be effective and binding on the date of post. The continuation of my Elken business or my acceptance of commissions and/or bonuses shall constitute my acceptance of any and all amendments made.</p>
+                        <p style="margin-bottom: 5px;"><strong>8.</strong> The Agreement, in its current form and as amended by the Company at its sole discretion, constitutes the entire contract between the Company and myself. Any promises, representations, offers or other communications not expressly set forth in the Agreement are of no force or effect. I may not assign any rights or delegate my duties under the Agreement without the prior written consent of the Company. Any attempt to transfer or assign the Agreement without the express written consent of the Company renders the Agreement voidable at the option of the Company and may result in termination of my dealership.</p>
+                        <p style="margin-bottom: 5px;"><strong>9.</strong> This Agreement shall be governed by and construed in accordance with the laws of Malaysia.</p>
+                        <p style="margin-bottom: 5px;"><strong>10.</strong> In the event of any inconsistency amongst English, Chinese and Bahasa Malaysia versions of this Agreement, the English version shall prevail.</p>
+                    </div>
+
+                    <!-- 中文条款 -->
+                    <div style="font-size: 9px; color: #003366; line-height: 1.5; margin-bottom: 10px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">爱康代理商合约条规</div>
+                        <p style="margin-bottom: 5px;"><strong>1.</strong> 我已满18岁及合格申请为公司代理商。</p>
+                        <p style="margin-bottom: 5px;"><strong>2.</strong> 我已阅读及同意遵守此合约所条规条款条例（简称"R&R"）、爱康营销计划（以下统称"此协议"）、1993年直销法令及反金字塔计划法案（Direct Sales & Anti-Pyramid Scheme Act 1993 (Act 500)，以及任何适用之法律和条例。我了解我不能违反此合约条款且依爱康营销计划（Elken Marketing Plan）之规定合格取得佣金及/或奖金。</p>
+                        <p style="margin-bottom: 5px;"><strong>3.</strong> 此代理商申请仅限定于个人申请，不适用于公司或组织，且对于申请文件资讯不完整/不正确或其他因素不符合公司规定者，公司保留权利接受或拒绝其申请。我了解若有任何不实陈述申请而导致任何过失，公司将无责且有权终止此合约。</p>
+                        <p style="margin-bottom: 5px;"><strong>4.</strong> 以此合约为目的，我同意公司可依据公司官网www.elken.com 上所阐明之爱康个人资料保护法令条例来使用，收集及处理我的个人资料。</p>
+                        <p style="margin-bottom: 5px;"><strong>5.</strong> 此合约期限为一年。依据爱康营销计划（Elken Marketing Plan）若我无法在12个月内累积（30）BV，或代理商资格因故被取消或终止，我了解我将不再适用代理商身份及享有爱康营销计划代理商的权利。</p>
+                        <p style="margin-bottom: 5px;"><strong>6.</strong> 若有以下情况之一，公司将保留此合约30天预告终止之权利：<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;i. 终止营运；<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;ii. 事业体解散；或<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;iii. 公司终止其产品及/或服务之代理商权。基于任何理由，代理商可随时终止此合约且书面寄送通知给公司。</p>
+                        <p style="margin-bottom: 5px;"><strong>7.</strong> 我了解公司有权修正此合约且我同意遵守其所有修正条款。修正条款将公布在公司网站上且自公布日起生效。同意遵守任何修正条款代表我的爱康事业得已继续或我接受佣金和/或奖金修正规定。</p>
+                        <p style="margin-bottom: 5px;"><strong>8.</strong> 此合约关系（包含此代理商申请表格）由公司及我双方建立之，公司有权修正代理商申请表格内容。此合约中未陈述的任何承诺，代表，给予或其它讯息将无效力。依此合约规定，在无取得任何公司书面同意之前提下，我不能让渡任何权利或授权。任何试图移转或让渡此合约而未经公司明确书面同意，公司有权表示合约无效且可终止我的代理商资格。</p>
+                        <p style="margin-bottom: 5px;"><strong>9.</strong> 此合约将依马来西亚法管理及解释之。</p>
+                        <p style="margin-bottom: 5px;"><strong>10.</strong> 此合约英文版，中文版与马来文版若有不一致之处，则以英文版合约为准。</p>
+                    </div>
+
+                    <!-- 马来文条款 -->
+                    <div style="font-size: 9px; color: #003366; line-height: 1.5; margin-bottom: 10px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">SYARAT-SYARAT PERJANJIAN PENGEDAR ELKEN</div>
+                        <p style="margin-bottom: 5px;"><strong>1.</strong> Saya berusia 18 tahun dan ke atas dan berkelayakan untuk memohon kepada Syarikat sebagai Pengegar.</p>
+                        <p style="margin-bottom: 5px;"><strong>2.</strong> Saya telah membaca dan bersetuju untuk mematuhi terma di sini, Peraturan dan Undang-undang Pengegar Elken ("R&R"), Pelan Pemasaran Elken (secara kolektif dirujuk sebagai "Perjanjian"), Akta Jualan Langsung & Skim Anti-Piramid 1993 (Akta 500) dan mana-mana peraturan dan undang-undang yang berkaitan. Saya faham bahawa saya tidak boleh melanggar Perjanjian, untuk melayakkan diri menerima komisen dan/atau bonus di bawah Pelan Pemasaran Elken.</p>
+                        <p style="margin-bottom: 5px;"><strong>3.</strong> Permohonan ini adalah secara ketat oleh perseorangan, bukan syarikat atau organisasi, dan Syarikat berhak untuk menerima atau menolak permohonan ini atas apa-apa sebab sekalipun mengikut budi bicaranya termasuk tetapi tidak terhad kepada maklumat tidak lengkap/tidak tepat yang diberikan di sini. Saya memahami bahawa sebarang salah nyata secara tidak sengaja bagi mana-mana maklumat yang saya berikan dalam permohonan ini, Syarikat tidak akan bertanggungjawab terhadap sebarang kesilapan yang terkandung di dalamnya dan boleh mengakibatkan penamatan Perjanjian ini.</p>
+                        <p style="margin-bottom: 5px;"><strong>4.</strong> Bagi tujuan Perjanjian ini, saya bersetuju bahawa Syarikat akan menggunakan, mengumpul dan memproses data peribadi saya menurut Notis Perlindungan Data Peribadi Elken seperti yang dinyatakan dalam laman web di www.elken.com</p>
+                        <p style="margin-bottom: 5px;"><strong>5.</strong> Tempoh Perjanjian ini adalah selama 1 tahun. Jika saya gagal mengumpul tiga puluh (30) BV dalam tempoh 12 bulan, atau jika keahlian Pengegar saya dibatalkan atau ditamatkan atas sebarang sebab, saya faham bahawa saya tidak lagi berhak memiliki status Pengegar saya dan semua faedah dan kelayakan di bawah Pemasaran Elken Pelan akan terbatal.</p>
+                        <p style="margin-bottom: 5px;"><strong>6.</strong> Syarikat berhak untuk menamatkan Perjanjian ini dengan notis 30 hari jika Syarikat memilih untuk:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;i. menamatkan operasi perniagaan;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;ii. membubarkan sebagai entiti perniagaan; atau<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;iii. menamatkan pengedaran produk dan/atau perkhidmatannya melalui saluran jualan langsung. Pengegar boleh menamatkan Perjanjian ini pada bila-bila masa, dan atas sebarang sebab, dengan notis bertulis kepada Syarikat di alamat perniagaan utamanya.</p>
+                        <p style="margin-bottom: 5px;"><strong>7.</strong> Saya faham bahawa Perjanjian ini boleh dipinda mengikut budi bicara mutlak Syarikat, dan saya bersetuju untuk mematuhi semua pindaan tersebut. Pindaan akan disiarkan oleh Syarikat di portal Pengegar dan akan berkuat kuasa dan mengikat pada tarikh pos. Penerusan perniagaan Elken saya atau penerimaan komisen dan/atau bonus saya akan membentuk penerimaan saya terhadap mana-mana dan semua pindaan yang dibuat.</p>
+                        <p style="margin-bottom: 5px;"><strong>8.</strong> Perjanjian, dalam bentuk semasa dan sebagaimana yang dipinda oleh Syarikat mengikut budi bicara mutlaknya, membentuk keseluruhan kontrak antara Syarikat dan saya sendiri. Sebarang janji, representasi, tawaran atau komunikasi lain yang tidak dinyatakan secara nyata dalam Perjanjian tidak mempunyai kekuatan atau kesan. Saya tidak boleh menyerahkan sebarang hak atau mewakilkan tugas saya di bawah Perjanjian tanpa kebenaran bertulis daripada Syarikat terlebih dahulu. Sebarang percubaan untuk memindahkan atau menyerahkan Perjanjian tanpa kebenaran bertulis nyata Syarikat menjadikan Perjanjian itu terbatal mengikut pilihan Syarikat dan boleh mengakibatkan penamatan keahlian saya.</p>
+                        <p style="margin-bottom: 5px;"><strong>9.</strong> Perjanjian ini akan ditadbir oleh dan ditafsirkan mengikut undang-undang Malaysia.</p>
+                        <p style="margin-bottom: 5px;"><strong>10.</strong> Sekiranya terdapat sebarang percanggahan antara versi Bahasa Inggeris, Bahasa Cina dan Bahasa Malaysia Perjanjian ini, versi Bahasa Inggeris akan diutamakan.</p>
+                    </div>
+
+                    <!-- 公司信息 -->
+                    <div style="margin-top: 20px; font-size: 9px; color: #003366; line-height: 1.4;">
+                        <div style="font-weight: bold; font-size: 11px;">ELKEN SDN BHD <span style="font-weight: normal;">(199501005790) (AJL 93727)</span></div>
+                        <div>11, 2nd Floor, Jalan TP5, Taman Perindustrian UEP, 47620 Subang Jaya, Selangor Darul Ehsan, Malaysia.</div>
+                        <div>T +603-8021 0088 &nbsp;&nbsp; F +603-8021 0089 &nbsp;&nbsp; www.elken.com</div>
                         
-                        <div class="terms-warning">
-                            <p><strong>COOLING-OFF PERIOD / 冷静期 / TEMPOH PENYEJUKAN</strong></p>
-                            <p>This contract is subject to a cooling-off period of TEN WORKING DAYS / SEVEN WORKING DAYS for MALAYSIA & SINGAPORE respectively.</p>
-                            <p class="terms-cn">本合同受冷静期约束，马来西亚为10个工作日，新加坡为7个工作日。</p>
-                            <p class="terms-bm">Kontrak ini tertakluk kepada tempoh penyejukan SEPULUH HARI BEKERJA / TUJUH HARI BEKERJA untuk MALAYSIA & SINGAPURA masing-masing.</p>
-                        </div>
+                        <div style="font-weight: bold; font-size: 11px; margin-top: 10px;">ELKEN (SINGAPORE) PTE LTD <span style="font-weight: normal;">(199701982Z)</span></div>
+                        <div>1, Sims Lane, #03-03/04, Singapore 387355. T +65-6746 4911 F +65 6746 1172 www.elken.com</div>
+                        
+                        <div style="font-weight: bold; font-size: 11px; margin-top: 10px;">ELKEN (B) SDN BHD <span style="font-weight: normal;">(AGO/RC/5231)</span></div>
+                        <div>Block B, Unit 6, 7 & 8 Setia Kenangan 2, Spg 150-5-13-18, Jalan Jame' Asr Kg Kiarong, Mukim Gadong B, BE1318, Brunei Darussalam. T +6732-223 6127 F +6732-223 6130 www.elken.com</div>
+                        
+                        <div style="margin-top: 10px; text-align: right; font-size: 8px;">CS/DAF/JAN2024</div>
                     </div>
                     
-                    <div class="terms-confirm">
-                        <label class="terms-checkbox-label">
-                            <input type="checkbox" id="agreeTermsPDF" class="terms-checkbox-input">
-                            <span class="terms-checkbox-text">
-                                I confirm that I have read, understood and agree to all the terms and conditions above.<br>
-                                我确认我已阅读、理解并同意以上所有条款。<br>
-                                Saya mengesahkan bahawa saya telah membaca, memahami dan bersetuju dengan semua terma dan syarat di atas.
+                    <!-- 确认勾选 -->
+                    <div class="terms-confirm" style="margin-top: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 8px; border: 2px solid #003366;">
+                        <label class="terms-checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="agreeTerms" class="terms-checkbox-input" style="margin-top: 3px; width: 18px; height: 18px;">
+                            <span class="terms-checkbox-text" style="font-size: 11px; line-height: 1.5; color: #003366;">
+                                <strong>我已阅读并同意以上所有条款 / I have read and agree to all the terms above / Saya telah membaca dan bersetuju dengan semua terma di atas</strong>
                             </span>
                         </label>
                     </div>
                 </div>
             </div>
             <div class="dealer-modal-footer">
-                <button class="btn btn-secondary" onclick="closePDFTerms()">返回</button>
-                <button class="btn btn-primary" id="termsAgreeBtn" onclick="fillAndPreviewPDF()" disabled>同意并预览填写后的PDF</button>
+                <button class="btn btn-secondary" onclick="closeDealerModal()">取消 / Cancel</button>
+                <button class="btn btn-primary" id="dealerNextBtn" onclick="goToSignature()" disabled>同意并前往签字 / Agree & Sign</button>
             </div>
         </div>
     </div>
 
-    <!-- 生成的PDF预览弹窗 -->
-    <div class="dealer-modal-overlay" id="pdfGeneratedModal">
-        <div class="dealer-modal-container pdf-preview-container">
-            <div class="dealer-modal-header">
-                <div class="dealer-modal-title">经销商申请表（已生成）</div>
-                <button class="dealer-modal-close" onclick="closeGeneratedPDF()">×</button>
+    <!-- 手写签名弹窗 - 全屏横屏 -->
+    <div class="dealer-modal-overlay signature-fullscreen" id="signatureModal">
+        <div class="dealer-modal-container signature-landscape-container">
+            <div class="signature-landscape-header">
+                <div class="signature-landscape-title">手写签名 / Handwritten Signature / Tandatangan Tangan</div>
+                <button class="signature-landscape-close" onclick="closeSignatureModal()">×</button>
             </div>
-            <div class="dealer-modal-body pdf-preview-body">
-                <div class="pdf-document">
-                    <div class="pdf-header">
-                        <div class="pdf-logo">ELKEN</div>
-                        <div class="pdf-form-no">Form No.: CS-F05<br>Rev No.: F</div>
-                    </div>
-                    <div class="pdf-title">DEALER APPLICATION FORM</div>
-                    <div class="pdf-subtitle">PLEASE FILL IN USING BLOCK LETTERS</div>
-                    
-                    <div class="pdf-section">
-                        <div class="pdf-section-title">APPLICANT'S PARTICULARS</div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field">
-                                <span class="pdf-label">Name:</span>
-                                <span class="pdf-value" id="genPdfName"></span>
-                            </div>
-                            <div class="pdf-field">
-                                <span class="pdf-label">Member ID:</span>
-                                <span class="pdf-value" id="genPdfMemberId"></span>
-                            </div>
-                        </div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field">
-                                <span class="pdf-label">ID Card No.:</span>
-                                <span class="pdf-value" id="genPdfIdCard"></span>
-                            </div>
-                            <div class="pdf-field">
-                                <span class="pdf-label">Date of Birth:</span>
-                                <span class="pdf-value" id="genPdfBirthDate"></span>
-                            </div>
-                        </div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field">
-                                <span class="pdf-label">Nationality:</span>
-                                <span class="pdf-value" id="genPdfCountry"></span>
-                            </div>
-                            <div class="pdf-field">
-                                <span class="pdf-label">Gender:</span>
-                                <span class="pdf-value" id="genPdfGender"></span>
-                            </div>
-                        </div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field pdf-field-full">
-                                <span class="pdf-label">Contact Number:</span>
-                                <span class="pdf-value" id="genPdfPhone"></span>
-                            </div>
-                        </div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field pdf-field-full">
-                                <span class="pdf-label">Email:</span>
-                                <span class="pdf-value" id="genPdfEmail"></span>
-                            </div>
-                        </div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field pdf-field-full">
-                                <span class="pdf-label">Address:</span>
-                                <span class="pdf-value" id="genPdfAddress"></span>
-                            </div>
-                        </div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field">
-                                <span class="pdf-label">City:</span>
-                                <span class="pdf-value" id="genPdfCity"></span>
-                            </div>
-                            <div class="pdf-field">
-                                <span class="pdf-label">Postcode:</span>
-                                <span class="pdf-value" id="genPdfPostcode"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pdf-section">
-                        <div class="pdf-section-title">SPONSOR'S PARTICULARS</div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field">
-                                <span class="pdf-label">Sponsor Name:</span>
-                                <span class="pdf-value" id="genPdfSponsorName"></span>
-                            </div>
-                            <div class="pdf-field">
-                                <span class="pdf-label">Sponsor ID:</span>
-                                <span class="pdf-value" id="genPdfSponsorId"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pdf-section">
-                        <div class="pdf-section-title">BANK INFORMATION</div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field">
-                                <span class="pdf-label">Bank Name:</span>
-                                <span class="pdf-value" id="genPdfBankName"></span>
-                            </div>
-                            <div class="pdf-field">
-                                <span class="pdf-label">Account Number:</span>
-                                <span class="pdf-value" id="genPdfBankAccount"></span>
-                            </div>
-                        </div>
-                        <div class="pdf-field-row">
-                            <div class="pdf-field pdf-field-full">
-                                <span class="pdf-label">Account Holder:</span>
-                                <span class="pdf-value" id="genPdfBankHolder"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pdf-footer">
-                        <div class="pdf-checkbox-line">
-                            <span class="pdf-checkbox">☐</span>
-                            <span class="pdf-checkbox-text">I confirm that all the information I provided is up-to-date. I've read and understood the terms and conditions and agree to abide by them.</span>
-                        </div>
-                    </div>
+            <div class="signature-landscape-body">
+                <div class="signature-landscape-hint">请在下方空白区域手写签名 / Please sign in the area below / Sila tandatangan di kawasan di bawah</div>
+                <canvas id="signatureCanvas" class="signature-landscape-canvas"></canvas>
+            </div>
+            <div class="signature-landscape-footer">
+                <button class="signature-btn signature-btn-clear" onclick="clearSignature()">清除重签 / Clear</button>
+                <div class="signature-landscape-actions">
+                    <button class="signature-btn signature-btn-secondary" onclick="backToTerms()">返回 / Back</button>
+                    <button class="signature-btn signature-btn-primary" onclick="submitDealerApplication()">确认提交 / Submit</button>
                 </div>
-            </div>
-            <div class="dealer-modal-footer">
-                <button class="btn btn-secondary" onclick="backToTemplateFromGenerated()">返回</button>
-                <button class="btn btn-primary" onclick="confirmGeneratedPDFAndSign()">确认并前往签字</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 手写签名弹窗 -->
-    <div class="dealer-modal-overlay" id="signatureModal">
-        <div class="dealer-modal-container signature-container">
-            <div class="dealer-modal-header">
-                <div class="dealer-modal-title">手写签名</div>
-                <button class="dealer-modal-close" onclick="closeSignatureModal()">×</button>
-            </div>
-            <div class="dealer-modal-body">
-                <div class="signature-hint">请在下方空白区域手写签名</div>
-                <canvas id="signatureCanvas" class="signature-canvas"></canvas>
-                <button class="btn btn-secondary btn-clear" onclick="clearSignature()">清除重签</button>
-            </div>
-            <div class="dealer-modal-footer">
-                <button class="btn btn-secondary" onclick="backToForm()">返回</button>
-                <button class="btn btn-primary" onclick="submitDealerApplication()">确认提交</button>
             </div>
         </div>
     </div>
@@ -3661,7 +3709,159 @@
             line-height: 1.5;
         }
 
-        /* 签名样式 */
+        /* 签名样式 - 全屏横屏 */
+        .signature-fullscreen {
+            padding: 0 !important;
+            background-color: #000 !important;
+        }
+
+        .signature-fullscreen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .signature-landscape-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: #f5f5f5;
+        }
+
+        .signature-landscape-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: #003366;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .signature-landscape-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .signature-landscape-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .signature-landscape-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .signature-landscape-hint {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .signature-landscape-canvas {
+            flex: 1;
+            width: 100%;
+            min-height: 300px;
+            border: 3px solid #003366;
+            border-radius: 8px;
+            background-color: white;
+            cursor: crosshair;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .signature-landscape-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            border-top: 1px solid #e5e5e5;
+            flex-shrink: 0;
+        }
+
+        .signature-landscape-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .signature-btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .signature-btn-clear {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .signature-btn-clear:hover {
+            background-color: #e5e7eb;
+        }
+
+        .signature-btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .signature-btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .signature-btn-primary {
+            background-color: #003366;
+            color: white;
+        }
+
+        .signature-btn-primary:hover {
+            background-color: #002244;
+        }
+
+        /* 强制横屏提示 */
+        @media screen and (orientation: portrait) {
+            .signature-fullscreen.active::before {
+                content: "请将设备旋转至横屏模式进行签名\APlease rotate your device to landscape mode\ASila putar peranti anda ke mod landskap";
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #003366;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                font-size: 18px;
+                white-space: pre;
+                line-height: 1.8;
+                z-index: 10001;
+            }
+        }
+
+        /* 旧签名样式保留兼容 */
         .signature-container {
             max-width: 400px;
         }
@@ -4071,14 +4271,14 @@
             console.log('正在打开经销商申请表...');
             const modal = document.getElementById('dealerModal');
             console.log('dealerModal 元素:', modal);
-            
+
             if (modal) {
                 modal.classList.add('active');
                 console.log('已添加 active 类');
-                
-                // 填充会员信息
-                fillMemberInfo();
-                
+
+                // 填充表单数据
+                fillDealerFormData();
+
                 // 绑定复选框事件
                 const agreeTerms = document.getElementById('agreeTerms');
                 if (agreeTerms) {
@@ -4091,172 +4291,184 @@
             }
         }
 
+        // 填充经销商表单数据
+        function fillDealerFormData() {
+            const memberData = getMemberData();
+
+            // 填充申请人信息
+            const nameEl = document.getElementById('dealerFormName');
+            if (nameEl) nameEl.textContent = memberData.name || '-';
+
+            const countryEl = document.getElementById('dealerFormCountry');
+            if (countryEl) countryEl.textContent = memberData.country || '-';
+
+            const country2El = document.getElementById('dealerFormCountry2');
+            if (country2El) country2El.textContent = memberData.country || '-';
+
+            const birthDateEl = document.getElementById('dealerFormBirthDate');
+            if (birthDateEl) birthDateEl.textContent = memberData.birthDate || '-';
+
+            const genderEl = document.getElementById('dealerFormGender');
+            if (genderEl) genderEl.textContent = memberData.gender || '-';
+
+            const idCardEl = document.getElementById('dealerFormIdCard');
+            if (idCardEl) idCardEl.textContent = memberData.idCard || '-';
+
+            const phoneEl = document.getElementById('dealerFormPhone');
+            if (phoneEl) phoneEl.textContent = memberData.phone || '-';
+
+            const phone2El = document.getElementById('dealerFormPhone2');
+            if (phone2El) phone2El.textContent = memberData.phone || '-';
+
+            const emailEl = document.getElementById('dealerFormEmail');
+            if (emailEl) emailEl.textContent = memberData.email || '-';
+
+            const addressEl = document.getElementById('dealerFormAddress');
+            if (addressEl) addressEl.textContent = memberData.address || '-';
+
+            const cityEl = document.getElementById('dealerFormCity');
+            if (cityEl) cityEl.textContent = memberData.city || '-';
+
+            const postcodeEl = document.getElementById('dealerFormPostcode');
+            if (postcodeEl) postcodeEl.textContent = memberData.postcode || '-';
+
+            // 填充推荐人信息
+            const sponsorNameEl = document.getElementById('dealerFormSponsorName');
+            if (sponsorNameEl) sponsorNameEl.textContent = memberData.sponsorName || '-';
+
+            const sponsorIdEl = document.getElementById('dealerFormSponsorId');
+            if (sponsorIdEl) sponsorIdEl.textContent = memberData.sponsorId || '-';
+
+            // 填充银行信息
+            const bankNameEl = document.getElementById('dealerFormBankName');
+            if (bankNameEl) bankNameEl.textContent = memberData.bankName || '-';
+
+            const bankAccountEl = document.getElementById('dealerFormBankAccount');
+            if (bankAccountEl) bankAccountEl.textContent = memberData.bankAccount || '-';
+
+            const bankHolderEl = document.getElementById('dealerFormBankHolder');
+            if (bankHolderEl) bankHolderEl.textContent = memberData.bankHolder || '-';
+        }
+
+        // 前往签名页面
+        function goToSignature() {
+            closeDealerModal();
+            openSignatureModal();
+        }
+
         // 关闭经销商申请表
         function closeDealerModal() {
             document.getElementById('dealerModal').classList.remove('active');
         }
 
-        // 填充会员信息 - 从系统获取并填充到表单
-        function fillMemberInfo() {
+        // 获取会员信息
+        function getMemberData() {
             // 模拟从系统API获取的完整会员信息
             // 实际项目中这些数据应该从后端API获取
-            const memberData = {
+            return {
                 name: document.querySelector('.card:nth-child(3) .data-row:nth-child(1) .data-value')?.textContent || 'EW1',
                 memberId: document.querySelector('.card:nth-child(3) .data-row:nth-child(2) .data-value')?.textContent || '100001234',
-                idCard: '811218085510', // 从系统获取
-                phone: '60165942500', // 从系统获取
-                address: '16 PERSIARAN PEGOH AMAN 4 TAMAN DESA AMAN', // 从系统获取
-                city: 'Lahat', // 从系统获取
-                postcode: '31500', // 从系统获取
-                country: 'Malaysia', // 从系统获取
-                birthDate: '1970-01-01', // 从系统获取
-                gender: 'Female', // 从系统获取
-                email: 'tehyinkhim@gmail.com', // 从系统获取
+                idCard: '811218085510',
+                phone: '60165942500',
+                address: '16 PERSIARAN PEGOH AMAN 4 TAMAN DESA AMAN',
+                city: 'Lahat',
+                postcode: '31500',
+                country: 'Malaysia',
+                birthDate: '1970-01-01',
+                gender: 'Female',
+                email: 'tehyinkhim@gmail.com',
                 sponsorName: document.querySelector('.card:nth-child(5) .data-row:nth-child(2) .data-value')?.textContent || 'Choong Bang Seng',
                 sponsorId: document.querySelector('.card:nth-child(5) .data-row:nth-child(1) .data-value')?.textContent || '000',
-                bankName: 'Maybank', // 从系统获取
-                bankAccount: '1234567890', // 从系统获取
-                bankHolder: 'TEH YIN KHIM' // 从系统获取
+                bankName: 'Maybank',
+                bankAccount: '1234567890',
+                bankHolder: 'TEH YIN KHIM'
             };
-            
-            // 填充所有字段
-            document.getElementById('dealerName').value = memberData.name;
-            document.getElementById('dealerMemberId').value = memberData.memberId;
-            document.getElementById('dealerIdCard').value = memberData.idCard;
-            document.getElementById('dealerPhone').value = memberData.phone;
-            document.getElementById('dealerAddress').value = memberData.address;
-            document.getElementById('dealerCity').value = memberData.city;
-            document.getElementById('dealerPostcode').value = memberData.postcode;
-            document.getElementById('dealerCountry').value = memberData.country;
-            document.getElementById('dealerBirthDate').value = memberData.birthDate;
-            document.getElementById('dealerGender').value = memberData.gender;
-            document.getElementById('dealerEmail').value = memberData.email;
-            document.getElementById('dealerSponsorName').value = memberData.sponsorName;
-            document.getElementById('dealerSponsorId').value = memberData.sponsorId;
-            document.getElementById('dealerBankName').value = memberData.bankName;
-            document.getElementById('dealerBankAccount').value = memberData.bankAccount;
-            document.getElementById('dealerBankHolder').value = memberData.bankHolder;
-        }
-
-        // 显示PDF条款页面
-        function showPDFTerms() {
-            closeDealerModal();
-            document.getElementById('pdfTermsModal').classList.add('active');
-            
-            // 绑定条款复选框事件
-            document.getElementById('agreeTermsPDF').addEventListener('change', function() {
-                document.getElementById('termsAgreeBtn').disabled = !this.checked;
-            });
-        }
-
-        // 关闭PDF条款页面
-        function closePDFTerms() {
-            document.getElementById('pdfTermsModal').classList.remove('active');
-            openDealerModal();
-        }
-
-        // 同意条款并预览填写后的PDF
-        function fillAndPreviewPDF() {
-            // 系统传参填充PDF
-            document.getElementById('genPdfName').textContent = document.getElementById('dealerName').value;
-            document.getElementById('genPdfMemberId').textContent = document.getElementById('dealerMemberId').value;
-            document.getElementById('genPdfIdCard').textContent = document.getElementById('dealerIdCard').value;
-            document.getElementById('genPdfBirthDate').textContent = document.getElementById('dealerBirthDate').value;
-            document.getElementById('genPdfCountry').textContent = document.getElementById('dealerCountry').value;
-            document.getElementById('genPdfGender').textContent = document.getElementById('dealerGender').value;
-            document.getElementById('genPdfPhone').textContent = document.getElementById('dealerPhone').value;
-            document.getElementById('genPdfEmail').textContent = document.getElementById('dealerEmail').value;
-            document.getElementById('genPdfAddress').textContent = document.getElementById('dealerAddress').value;
-            document.getElementById('genPdfCity').textContent = document.getElementById('dealerCity').value;
-            document.getElementById('genPdfPostcode').textContent = document.getElementById('dealerPostcode').value;
-            document.getElementById('genPdfSponsorName').textContent = document.getElementById('dealerSponsorName').value;
-            document.getElementById('genPdfSponsorId').textContent = document.getElementById('dealerSponsorId').value;
-            document.getElementById('genPdfBankName').textContent = document.getElementById('dealerBankName').value;
-            document.getElementById('genPdfBankAccount').textContent = document.getElementById('dealerBankAccount').value;
-            document.getElementById('genPdfBankHolder').textContent = document.getElementById('dealerBankHolder').value;
-            
-            // 关闭条款页面，显示填充后的PDF
-            document.getElementById('pdfTermsModal').classList.remove('active');
-            document.getElementById('pdfGeneratedModal').classList.add('active');
-        }
-
-        // 关闭生成的PDF预览
-        function closeGeneratedPDF() {
-            document.getElementById('pdfGeneratedModal').classList.remove('active');
-        }
-
-        // 从生成的PDF返回条款页面
-        function backToTemplateFromGenerated() {
-            document.getElementById('pdfGeneratedModal').classList.remove('active');
-            document.getElementById('pdfTermsModal').classList.add('active');
-        }
-
-        // 确认生成的PDF并前往签名
-        function confirmGeneratedPDFAndSign() {
-            document.getElementById('pdfGeneratedModal').classList.remove('active');
-            openSignatureModal();
         }
 
         // 打开签名弹窗
         function openSignatureModal() {
             const modal = document.getElementById('signatureModal');
             modal.classList.add('active');
-            
-            // 初始化画布
-            initSignatureCanvas();
+
+            // 锁定屏幕方向为横屏（如果支持）
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(function(error) {
+                    console.log('屏幕方向锁定失败:', error);
+                });
+            }
+
+            // 请求全屏（如果支持）
+            const container = document.querySelector('.signature-landscape-container');
+            if (container && container.requestFullscreen) {
+                container.requestFullscreen().catch(function(error) {
+                    console.log('全屏请求失败:', error);
+                });
+            }
+
+            // 延迟初始化画布，确保布局完成
+            setTimeout(function() {
+                initSignatureCanvas();
+            }, 100);
         }
 
         // 关闭签名弹窗
         function closeSignatureModal() {
             document.getElementById('signatureModal').classList.remove('active');
+
+            // 解锁屏幕方向
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+
+            // 退出全屏
+            if (document.exitFullscreen && document.fullscreenElement) {
+                document.exitFullscreen();
+            }
         }
 
-        // 返回生成的PDF预览
-        function backToForm() {
+        // 从签名返回条款页面
+        function backToTerms() {
             closeSignatureModal();
-            document.getElementById('pdfGeneratedModal').classList.add('active');
-        }
-
-        // 显示PDF模板预览（兼容性保留）
-        function showPDFPreview() {
-            showPDFTerms();
-        }
-
-        // 关闭PDF模板预览（兼容性保留）
-        function closePDFTemplate() {
-            closePDFTerms();
-        }
-
-        // 生成PDF（兼容性保留）
-        function generatePDF() {
-            fillAndPreviewPDF();
+            openDealerModal();
         }
 
         // 初始化签名画布
         function initSignatureCanvas() {
             signatureCanvas = document.getElementById('signatureCanvas');
+            if (!signatureCanvas) return;
+
             signatureCtx = signatureCanvas.getContext('2d');
-            
-            // 设置画布大小
-            const rect = signatureCanvas.getBoundingClientRect();
-            signatureCanvas.width = rect.width;
-            signatureCanvas.height = rect.height;
-            
+
+            // 清除之前的事件监听器（防止重复绑定）
+            signatureCanvas.removeEventListener('mousedown', startDrawing);
+            signatureCanvas.removeEventListener('mousemove', draw);
+            signatureCanvas.removeEventListener('mouseup', stopDrawing);
+            signatureCanvas.removeEventListener('mouseout', stopDrawing);
+            signatureCanvas.removeEventListener('touchstart', handleTouch);
+            signatureCanvas.removeEventListener('touchmove', handleTouch);
+            signatureCanvas.removeEventListener('touchend', stopDrawing);
+
+            // 设置画布大小为父容器大小
+            const parent = signatureCanvas.parentElement;
+            const parentRect = parent.getBoundingClientRect();
+            signatureCanvas.width = parentRect.width - 40; // 减去padding
+            signatureCanvas.height = parentRect.height - 80; // 减去header和padding
+
             // 设置画笔样式
             signatureCtx.strokeStyle = '#111827';
-            signatureCtx.lineWidth = 2;
+            signatureCtx.lineWidth = 3;
             signatureCtx.lineCap = 'round';
             signatureCtx.lineJoin = 'round';
-            
+
             // 绑定事件
             signatureCanvas.addEventListener('mousedown', startDrawing);
             signatureCanvas.addEventListener('mousemove', draw);
             signatureCanvas.addEventListener('mouseup', stopDrawing);
             signatureCanvas.addEventListener('mouseout', stopDrawing);
-            
-            // 触摸事件
-            signatureCanvas.addEventListener('touchstart', handleTouch);
-            signatureCanvas.addEventListener('touchmove', handleTouch);
+
+            // 触摸事件 - 使用passive: false防止滚动
+            signatureCanvas.addEventListener('touchstart', handleTouch, { passive: false });
+            signatureCanvas.addEventListener('touchmove', handleTouch, { passive: false });
             signatureCanvas.addEventListener('touchend', stopDrawing);
         }
 
@@ -4307,6 +4519,11 @@
         function clearSignature() {
             if (signatureCtx && signatureCanvas) {
                 signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+                // 重新设置画笔样式
+                signatureCtx.strokeStyle = '#111827';
+                signatureCtx.lineWidth = 3;
+                signatureCtx.lineCap = 'round';
+                signatureCtx.lineJoin = 'round';
             }
         }
 
@@ -4315,18 +4532,34 @@
             // 检查是否有签名
             const imageData = signatureCtx.getImageData(0, 0, signatureCanvas.width, signatureCanvas.height);
             const hasSignature = imageData.data.some(channel => channel !== 0);
-            
+
             if (!hasSignature) {
-                alert('请先手写签名');
+                alert('请先手写签名 / Please sign first / Sila tandatangan terlebih dahulu');
                 return;
             }
-            
-            // 保存申请状态
+
+            // 获取签名图片数据
+            const signatureDataUrl = signatureCanvas.toDataURL('image/png');
+
+            // 获取会员数据并保存申请数据
+            const memberData = getMemberData();
+            const dealerData = {
+                ...memberData,
+                signature: signatureDataUrl,
+                submitDate: new Date().toLocaleDateString('zh-CN'),
+                submitDateEn: new Date().toLocaleDateString('en-GB')
+            };
+
+            // 保存到localStorage
             localStorage.setItem('dealerApplicationSubmitted', 'true');
-            
+            localStorage.setItem('dealerApplicationData', JSON.stringify(dealerData));
+
+            // 设置为stockist（模拟审核通过）
+            localStorage.setItem('isStockist', 'true');
+
             // 关闭签名弹窗
             closeSignatureModal();
-            
+
             // 显示成功提示
             document.getElementById('successModal').classList.add('active');
         }
@@ -4334,19 +4567,414 @@
         // 关闭成功提示
         function closeSuccessModal() {
             document.getElementById('successModal').classList.remove('active');
+            // 刷新页面以显示e-form模块
+            location.reload();
         }
 
         // 页面加载时检查
         document.addEventListener('DOMContentLoaded', function() {
             console.log('页面加载完成，检查 dealerModal:', document.getElementById('dealerModal'));
-            checkDealerApplication();
+            console.log('页面加载完成，检查 dealerFormList:', document.getElementById('dealerFormList'));
+            console.log('页面加载完成，检查 policies tab:', document.getElementById('policies'));
+            
+            // 延迟执行，确保DOM完全加载
+            setTimeout(function() {
+                console.log('延迟检查 dealerFormList:', document.getElementById('dealerFormList'));
+                // 检查stockist身份并控制e-form显示
+                checkStockistStatus();
+                
+                // 检查是否需要显示经销商申请表
+                checkDealerApplication();
+            }, 500);
         });
+
+        // 检查stockist身份并控制e-form显示
+        function checkStockistStatus() {
+            const isStockist = localStorage.getItem('isStockist') === 'true';
+            
+            // 控制e-form标签显示
+            const eformTab = document.querySelector('.stockist-only-tab');
+            if (eformTab) {
+                eformTab.style.display = isStockist ? 'block' : 'none';
+            }
+            
+            // 如果是stockist，加载已提交的申请表
+            if (isStockist) {
+                loadDealerForms();
+            }
+            
+            console.log('Stockist状态:', isStockist, 'e-form标签显示:', isStockist);
+        }
+
+        // 加载已提交的经销商申请表
+        function loadDealerForms() {
+            console.log('loadDealerForms 函数开始执行');
+            console.log('当前页面URL:', window.location.href);
+            console.log('document.body 是否存在:', !!document.body);
+            
+            const formList = document.getElementById('dealerFormList');
+            console.log('loadDealerForms 被调用, formList:', formList);
+            console.log('document.getElementById("dealerFormList"):', document.getElementById('dealerFormList'));
+            console.log('document.querySelector("#dealerFormList"):', document.querySelector('#dealerFormList'));
+            
+            // 如果找不到元素，尝试从policies tab中查找
+            if (!formList) {
+                console.error('找不到 dealerFormList 元素，尝试查找 policies tab');
+                const policiesTab = document.getElementById('policies');
+                console.log('policies tab:', policiesTab);
+                if (policiesTab) {
+                    console.log('policies tab innerHTML:', policiesTab.innerHTML.substring(0, 200));
+                }
+                return;
+            }
+            
+            // 从localStorage获取已提交的申请表数据
+            const hasApplied = localStorage.getItem('dealerApplicationSubmitted') === 'true';
+            const dealerData = JSON.parse(localStorage.getItem('dealerApplicationData') || '{}');
+            
+            console.log('hasApplied:', hasApplied, 'dealerData:', dealerData);
+            
+            if (hasApplied && dealerData.name) {
+                // 显示已提交的申请表 - 简洁列表形式
+                const htmlContent = `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                        <div style="font-size: 15px; color: #374151;">E-Form</div>
+                        <a href="#" onclick="downloadDealerPDF(); return false;" style="display: flex; align-items: center; gap: 6px; color: #0066cc; text-decoration: none; font-size: 14px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Download</span>
+                        </a>
+                    </div>
+                `;
+                formList.innerHTML = htmlContent;
+                console.log('已设置 innerHTML, 内容长度:', htmlContent.length);
+            } else {
+                // 没有已提交的申请表
+                formList.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #6b7280; font-size: 14px;">
+                        暂无已提交的申请表
+                    </div>
+                `;
+                console.log('显示暂无申请表');
+            }
+            
+            // 验证内容是否设置成功
+            console.log('formList.innerHTML 设置后:', formList.innerHTML.substring(0, 100));
+        }
+
+        // 查看经销商申请表PDF - 在新页面打开
+        function viewDealerPDF() {
+            // 将数据存储到sessionStorage，供新页面使用
+            const dealerData = JSON.parse(localStorage.getItem('dealerApplicationData') || '{}');
+            sessionStorage.setItem('viewDealerPDFData', JSON.stringify(dealerData));
+            
+            // 在新页面打开PDF查看器
+            window.open('dealer_pdf_viewer.html', '_blank');
+        }
+
+        // 直接下载经销商申请表PDF - 带签名的完整版本
+        function downloadDealerPDF() {
+            // 获取经销商申请数据
+            const dealerData = JSON.parse(localStorage.getItem('dealerApplicationData') || '{}');
+
+            // 使用 jsPDF 直接生成并下载 PDF
+            generateDirectPDF(dealerData);
+        }
+
+        // 使用 jsPDF 直接生成并下载 PDF
+        function generateDirectPDF(data) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            const pageWidth = 210;
+            const margin = 15;
+            const contentWidth = pageWidth - 2 * margin;
+            let y = 15;
+
+            // 辅助函数：添加文本
+            function addText(text, x, yPos, options) {
+                doc.text(text, x, yPos, options);
+            }
+
+            // 辅助函数：添加标题栏
+            function addSectionTitle(title, yPos) {
+                doc.setFillColor(0, 51, 102);
+                doc.rect(margin, yPos, contentWidth, 6, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'bold');
+                doc.text(title, margin + 2, yPos + 4.5);
+                doc.setTextColor(0, 0, 0);
+                return yPos + 8;
+            }
+
+            // Logo 和表单编号
+            doc.setFillColor(233, 30, 99);
+            doc.rect(margin, y, 25, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('ELKEN', margin + 5, y + 7);
+
+            doc.setTextColor(0, 51, 102);
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Form No.: CS-F05', pageWidth - margin - 25, y + 4);
+            doc.text('Rev No.: F', pageWidth - margin - 25, y + 8);
+            y += 15;
+
+            // 标题
+            doc.setTextColor(0, 51, 102);
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text('DEALER APPLICATION FORM', pageWidth / 2, y, { align: 'center' });
+            y += 5;
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.text('PLEASE FILL IN USING BLOCK LETTERS', pageWidth / 2, y, { align: 'center' });
+            y += 8;
+
+            // APPLICANT'S PARTICULARS
+            y = addSectionTitle("APPLICANT'S PARTICULARS", y);
+
+            // 姓名
+            doc.setFontSize(7);
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('NAME OF APPLICANT (As per NRIC / Passport)', margin, y);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            doc.text(data.name || '-', margin, y + 5);
+            y += 10;
+
+            // 两列信息
+            doc.setFontSize(8);
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('NATIONALITY', margin, y);
+            doc.text('DATE OF BIRTH', margin + contentWidth / 2, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.country || '-', margin, y + 4);
+            doc.text(data.birthDate || '-', margin + contentWidth / 2, y + 4);
+            y += 10;
+
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('NEW I/C NO.', margin, y);
+            doc.text('CONTACT NUMBER', margin + contentWidth / 2, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.idCard || '-', margin, y + 4);
+            doc.text(data.phone || '-', margin + contentWidth / 2, y + 4);
+            y += 10;
+
+            // Email
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('EMAIL', margin, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.email || '-', margin, y + 4);
+            y += 10;
+
+            // Address
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('ADDRESS', margin, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            const addressLines = doc.splitTextToSize(data.address || '-', contentWidth);
+            doc.text(addressLines, margin, y + 4);
+            y += addressLines.length * 4 + 5;
+
+            // City, Country, Postcode
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('CITY', margin, y);
+            doc.text('COUNTRY', margin + contentWidth / 3, y);
+            doc.text('POSTCODE', margin + 2 * contentWidth / 3, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.city || '-', margin, y + 4);
+            doc.text(data.country || '-', margin + contentWidth / 3, y + 4);
+            doc.text(data.postcode || '-', margin + 2 * contentWidth / 3, y + 4);
+            y += 12;
+
+            // SPONSOR'S PARTICULARS
+            y = addSectionTitle("SPONSOR'S PARTICULARS", y);
+            doc.setFontSize(8);
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('NAME OF SPONSOR', margin, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.sponsorName || '-', margin, y + 4);
+            y += 10;
+
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SPONSOR ID', margin, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.sponsorId || '-', margin, y + 4);
+            y += 12;
+
+            // BONUS PAYMENT DETAILS
+            y = addSectionTitle("BONUS PAYMENT DETAILS", y);
+            doc.setFontSize(8);
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('BANK NAME', margin, y);
+            doc.text('BANK ACCOUNT', margin + contentWidth / 2, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.bankName || '-', margin, y + 4);
+            doc.text(data.bankAccount || '-', margin + contentWidth / 2, y + 4);
+            y += 10;
+
+            doc.setTextColor(0, 51, 102);
+            doc.setFont('helvetica', 'bold');
+            doc.text('BANK ACCOUNT HOLDER', margin, y);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.bankHolder || '-', margin, y + 4);
+            y += 12;
+
+            // DECLARATION
+            y = addSectionTitle("DECLARATION", y);
+            doc.setFontSize(8);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            const declaration = 'I confirm that all the information provided in this Application Form is correct, accurate and complete and I have read and understood the Terms of Agreement on the back of this Application, and consent to the processing of my personal data in accordance with Elken Sdn. Bhd. ("Company") Personal Data Protection Notice stated in Elken\'s website at www.elken.com';
+            const decLines = doc.splitTextToSize(declaration, contentWidth);
+            doc.text(decLines, margin, y);
+            y += decLines.length * 4 + 5;
+
+            // SIGNATURE
+            y = addSectionTitle("SIGNATURE", y);
+
+            // 签名框
+            doc.setDrawColor(0, 51, 102);
+            doc.setLineWidth(0.5);
+            doc.rect(margin, y, 80, 30);
+
+            // 如果有签名图片，添加进去
+            if (data.signature && data.signature.startsWith('data:image')) {
+                try {
+                    doc.addImage(data.signature, 'PNG', margin + 5, y + 2, 70, 26);
+                } catch (e) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text('[Signature]', margin + 5, y + 15);
+                }
+            } else {
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text('[No Signature]', margin + 5, y + 15);
+            }
+
+            // 日期
+            doc.setFontSize(8);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'bold');
+            doc.text('DATE:', margin + 90, y + 10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(data.submitDateEn || new Date().toLocaleDateString('en-GB'), margin + 105, y + 10);
+
+            y += 35;
+
+            // 添加新页面显示条款
+            doc.addPage();
+            y = 15;
+
+            // TERMS OF AGREEMENT
+            y = addSectionTitle("TERMS OF AGREEMENT", y);
+
+            const terms = [
+                '1. I am 18 years old and above and eligible to apply to Company as its Dealer.',
+                '2. I have read and agree to comply with the terms herein, Elken Dealers\' Rules and Regulations ("R&R"), Elken Marketing Plan (collectively referred to as the "Agreement"), Direct Sales & Anti-Pyramid Scheme Act 1993 (Act 500) and any applicable regulations and relevant laws.',
+                '3. This application is strictly by a natural person, not company or organization, and the Company reserves the right to accept or reject this application for any reason whatsoever at its discretion.',
+                '4. I consent to the processing of my personal data in accordance with the Elken\'s Personal Data Protection Notice as stated in Elken\'s website at www.elken.com',
+                '5. The term of this Agreement is 1 year. If I fail to accumulate thirty (30) BV over 12 months, or if my dealership is cancelled or terminated for any reason, I understand that I shall no longer be entitled to the status of my dealership.',
+                '6. The Company reserves the right to terminate this Agreement upon 30 days notice if the Company elects to: cease business operations; dissolve as a business entity; or terminate distribution of its products and/or services via direct selling channels.',
+                '7. I understand that this Agreement may be amended at Company\'s sole discretion, and I agree to abide by all such amendments thereof.',
+                '8. This Agreement shall be governed by and construed in accordance with the laws of Malaysia.',
+                '9. In the event of any inconsistency amongst English, Chinese and Bahasa Malaysia versions of this Agreement, the English version shall prevail.'
+            ];
+
+            doc.setFontSize(8);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+
+            terms.forEach(term => {
+                const termLines = doc.splitTextToSize(term, contentWidth);
+                doc.text(termLines, margin, y);
+                y += termLines.length * 4 + 2;
+            });
+
+            // 页脚
+            doc.setFontSize(7);
+            doc.setTextColor(100, 100, 100);
+            doc.text('This is a computer-generated document.', pageWidth / 2, 280, { align: 'center' });
+            doc.text('© ' + new Date().getFullYear() + ' ELKEN International. All rights reserved.', pageWidth / 2, 285, { align: 'center' });
+
+            // 直接下载 PDF
+            doc.save('Dealer_Application_Form_' + (data.memberId || '000000') + '_Signed.pdf');
+        }
 
         // 测试用：清除申请状态
         function resetDealerApplication() {
             localStorage.removeItem('dealerApplicationSubmitted');
             localStorage.removeItem('isStockist');
             alert('已重置申请状态，请刷新页面');
+        }
+
+        // 测试：作为非Stockist（会弹出申请表）
+        function testAsNonStockist() {
+            localStorage.setItem('isStockist', 'false');
+            localStorage.removeItem('dealerApplicationSubmitted');
+            localStorage.removeItem('dealerApplicationData');
+            alert('已设置为非Stockist，页面将刷新并弹出申请表');
+            location.reload();
+        }
+
+        // 测试：作为Stockist（可查看e-form）
+        function testAsStockist() {
+            localStorage.setItem('isStockist', 'true');
+            localStorage.setItem('dealerApplicationSubmitted', 'true');
+            localStorage.setItem('dealerApplicationData', JSON.stringify({
+                name: 'TEH YIN KHIM',
+                memberId: '100001234',
+                idCard: '811218085510',
+                birthDate: '1970-01-01',
+                country: 'Malaysia',
+                gender: 'Female',
+                phone: '60165942500',
+                email: 'tehyinkhim@gmail.com',
+                address: '16 PERSIARAN PEGOH AMAN 4 TAMAN DESA AMAN',
+                city: 'Lahat',
+                postcode: '31500',
+                sponsorName: 'KOK MENG CHOO',
+                sponsorId: '000200001242',
+                bankName: 'Maybank',
+                bankAccount: '000012365245612',
+                bankHolder: 'TEH YIN KHIM',
+                submitDate: '2023-10-01'
+            }));
+            alert('已设置为Stockist，页面将刷新并显示e-form');
+            location.reload();
+        }
+
+        // 重置所有测试数据
+        function resetTestData() {
+            localStorage.clear();
+            alert('已清除所有数据，页面将刷新');
+            location.reload();
         }
     </script>
 

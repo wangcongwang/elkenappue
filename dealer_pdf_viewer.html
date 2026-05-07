@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>经销商申请表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f7fa;
+            color: #111827;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background-color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background-color: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .download-btn {
+            padding: 8px 16px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .download-btn:hover {
+            background-color: #0052a3;
+        }
+
+        .pdf-document {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-family: Arial, sans-serif;
+        }
+
+        .pdf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e3a8a;
+            padding-bottom: 15px;
+        }
+
+        .pdf-logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .pdf-form-no {
+            font-size: 11px;
+            color: #666;
+            text-align: right;
+            line-height: 1.4;
+        }
+
+        .pdf-title {
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+
+        .pdf-subtitle {
+            font-size: 11px;
+            text-align: center;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .pdf-section {
+            margin-bottom: 24px;
+            border: 1px solid #1e3a8a;
+            padding: 16px;
+        }
+
+        .pdf-section-title {
+            background-color: #1e3a8a;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 12px;
+            margin: -16px -16px 12px -16px;
+        }
+
+        .pdf-field-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 12px;
+        }
+
+        .pdf-field {
+            flex: 1;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .pdf-field-full {
+            flex: 2;
+        }
+
+        .pdf-label {
+            font-size: 11px;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .pdf-value {
+            font-size: 13px;
+            color: #111827;
+            font-weight: 600;
+            border-bottom: 1px solid #d1d5db;
+            flex: 1;
+            padding-bottom: 2px;
+            min-height: 20px;
+        }
+
+        .pdf-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #1e3a8a;
+        }
+
+        .pdf-checkbox-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .pdf-checkbox {
+            font-size: 16px;
+            color: #374151;
+        }
+
+        .pdf-checkbox-text {
+            font-size: 11px;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .signature-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .signature-box {
+            width: 200px;
+        }
+
+        .signature-label {
+            font-size: 11px;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #111827;
+            height: 40px;
+            margin-bottom: 4px;
+        }
+
+        .signature-name {
+            font-size: 12px;
+            color: #111827;
+            font-weight: 500;
+        }
+
+        .date-box {
+            text-align: right;
+        }
+
+        .date-label {
+            font-size: 11px;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .date-value {
+            font-size: 12px;
+            color: #111827;
+            font-weight: 500;
+            border-bottom: 1px solid #111827;
+            padding-bottom: 4px;
+            min-width: 120px;
+            display: inline-block;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .header {
+                display: none;
+            }
+            .pdf-document {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.close()">
+                    ← 返回
+                </button>
+                <div class="header-title">经销商申请表</div>
+            </div>
+            <button class="download-btn" onclick="window.print()">
+                🖨️ 打印 / 下载PDF
+            </button>
+        </div>
+
+        <div class="pdf-document" id="pdfContent">
+            <div class="pdf-header">
+                <div class="pdf-logo">ELKEN</div>
+                <div class="pdf-form-no">Form No.: CS-F05<br>Rev No.: F</div>
+            </div>
+            <div class="pdf-title">DEALER APPLICATION FORM</div>
+            <div class="pdf-subtitle">PLEASE FILL IN USING BLOCK LETTERS / 请用大写字母填写 / SILA ISI DENGAN HURUF BESAR</div>
+            
+            <div class="pdf-section">
+                <div class="pdf-section-title">APPLICANT'S PARTICULARS / 申请者资料 / BUTIR-BUTIR PEMOHON</div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field">
+                        <span class="pdf-label">Name / 姓名:</span>
+                        <span class="pdf-value" id="pdfName"></span>
+                    </div>
+                    <div class="pdf-field">
+                        <span class="pdf-label">Member ID / 会员号:</span>
+                        <span class="pdf-value" id="pdfMemberId"></span>
+                    </div>
+                </div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field">
+                        <span class="pdf-label">ID Card No. / 身份证号:</span>
+                        <span class="pdf-value" id="pdfIdCard"></span>
+                    </div>
+                    <div class="pdf-field">
+                        <span class="pdf-label">Date of Birth / 出生日期:</span>
+                        <span class="pdf-value" id="pdfBirthDate"></span>
+                    </div>
+                </div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field">
+                        <span class="pdf-label">Nationality / 国籍:</span>
+                        <span class="pdf-value" id="pdfCountry"></span>
+                    </div>
+                    <div class="pdf-field">
+                        <span class="pdf-label">Gender / 性别:</span>
+                        <span class="pdf-value" id="pdfGender"></span>
+                    </div>
+                </div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field pdf-field-full">
+                        <span class="pdf-label">Contact Number / 联系电话:</span>
+                        <span class="pdf-value" id="pdfPhone"></span>
+                    </div>
+                </div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field pdf-field-full">
+                        <span class="pdf-label">Email / 邮箱:</span>
+                        <span class="pdf-value" id="pdfEmail"></span>
+                    </div>
+                </div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field pdf-field-full">
+                        <span class="pdf-label">Address / 地址:</span>
+                        <span class="pdf-value" id="pdfAddress"></span>
+                    </div>
+                </div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field">
+                        <span class="pdf-label">City / 城市:</span>
+                        <span class="pdf-value" id="pdfCity"></span>
+                    </div>
+                    <div class="pdf-field">
+                        <span class="pdf-label">Postcode / 邮编:</span>
+                        <span class="pdf-value" id="pdfPostcode"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdf-section">
+                <div class="pdf-section-title">SPONSOR'S PARTICULARS / 推荐人资料 / MAKLUMAT PENAJA</div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field">
+                        <span class="pdf-label">Sponsor Name / 推荐人姓名:</span>
+                        <span class="pdf-value" id="pdfSponsorName"></span>
+                    </div>
+                    <div class="pdf-field">
+                        <span class="pdf-label">Sponsor ID / 推荐人ID:</span>
+                        <span class="pdf-value" id="pdfSponsorId"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdf-section">
+                <div class="pdf-section-title">BANK INFORMATION / 银行信息 / MAKLUMAT BANK</div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field">
+                        <span class="pdf-label">Bank Name / 银行名称:</span>
+                        <span class="pdf-value" id="pdfBankName"></span>
+                    </div>
+                    <div class="pdf-field">
+                        <span class="pdf-label">Account Number / 账号:</span>
+                        <span class="pdf-value" id="pdfBankAccount"></span>
+                    </div>
+                </div>
+                <div class="pdf-field-row">
+                    <div class="pdf-field pdf-field-full">
+                        <span class="pdf-label">Account Holder / 账户持有人:</span>
+                        <span class="pdf-value" id="pdfBankHolder"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdf-footer">
+                <div class="pdf-checkbox-line">
+                    <span class="pdf-checkbox">☑</span>
+                    <span class="pdf-checkbox-text">
+                        I confirm that all the information I provided is up-to-date. I've read and understood the terms and conditions and agree to abide by them.<br>
+                        我确认以上信息真实有效，并已阅读理解条款条件，同意遵守。<br>
+                        Saya mengesahkan bahawa semua maklumat yang diberikan adalah terkini. Saya telah membaca dan memahami terma-terma dan syarat-syarat dan bersetuju untuk mematuhinya.
+                    </span>
+                </div>
+
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <div class="signature-label">Applicant Signature / 申请者签名 / Tandatangan Pemohon</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-name" id="pdfSignatureName"></div>
+                    </div>
+                    <div class="date-box">
+                        <div class="date-label">Date / 日期 / Tarikh</div>
+                        <div class="date-value" id="pdfSubmitDate"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时从sessionStorage获取数据并填充
+        document.addEventListener('DOMContentLoaded', function() {
+            const dealerData = JSON.parse(sessionStorage.getItem('viewDealerPDFData') || '{}');
+            
+            if (dealerData.name) {
+                document.getElementById('pdfName').textContent = dealerData.name;
+                document.getElementById('pdfMemberId').textContent = dealerData.memberId;
+                document.getElementById('pdfIdCard').textContent = dealerData.idCard;
+                document.getElementById('pdfBirthDate').textContent = dealerData.birthDate;
+                document.getElementById('pdfCountry').textContent = dealerData.country;
+                document.getElementById('pdfGender').textContent = dealerData.gender;
+                document.getElementById('pdfPhone').textContent = dealerData.phone;
+                document.getElementById('pdfEmail').textContent = dealerData.email;
+                document.getElementById('pdfAddress').textContent = dealerData.address;
+                document.getElementById('pdfCity').textContent = dealerData.city;
+                document.getElementById('pdfPostcode').textContent = dealerData.postcode;
+                document.getElementById('pdfSponsorName').textContent = dealerData.sponsorName;
+                document.getElementById('pdfSponsorId').textContent = dealerData.sponsorId;
+                document.getElementById('pdfBankName').textContent = dealerData.bankName;
+                document.getElementById('pdfBankAccount').textContent = dealerData.bankAccount;
+                document.getElementById('pdfBankHolder').textContent = dealerData.bankHolder;
+                document.getElementById('pdfSignatureName').textContent = dealerData.name;
+                document.getElementById('pdfSubmitDate').textContent = dealerData.submitDate;
+            } else {
+                // 如果没有数据，显示提示
+                document.body.innerHTML = '<div style="text-align: center; padding: 50px;"><h2>暂无数据</h2><p>请从e-form页面重新打开</p></div>';
+            }
+        });
+    </script>
+</body>
+</html>
