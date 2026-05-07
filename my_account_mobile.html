@@ -3107,10 +3107,1248 @@
         });
     </script>
 
+    <!-- 经销商申请表单弹窗 -->
+    <div class="dealer-modal-overlay" id="dealerModal">
+        <div class="dealer-modal-container">
+            <div class="dealer-modal-header">
+                <div class="dealer-modal-title">经销商申请表</div>
+                <button class="dealer-modal-close" onclick="closeDealerModal()">×</button>
+            </div>
+            <div class="dealer-modal-body">
+                <div class="pdf-preview-info">
+                    <div class="info-hint">以下信息将自动填充到经销商申请表PDF中</div>
+                </div>
+                <form id="dealerForm">
+                    <!-- 申请人信息 -->
+                    <div class="form-section">
+                        <div class="form-section-title">申请人信息（系统自动填充）</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">姓名</label>
+                                <input type="text" id="dealerName" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">会员ID</label>
+                                <input type="text" id="dealerMemberId" class="form-control" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">身份证号</label>
+                                <input type="text" id="dealerIdCard" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">联系电话</label>
+                                <input type="tel" id="dealerPhone" class="form-control" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group form-group-full">
+                                <label class="form-label">地址</label>
+                                <textarea id="dealerAddress" class="form-control" rows="2" readonly></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">城市</label>
+                                <input type="text" id="dealerCity" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">邮编</label>
+                                <input type="text" id="dealerPostcode" class="form-control" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">国家</label>
+                                <input type="text" id="dealerCountry" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">出生日期</label>
+                                <input type="text" id="dealerBirthDate" class="form-control" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">性别</label>
+                                <input type="text" id="dealerGender" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">邮箱</label>
+                                <input type="text" id="dealerEmail" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- 推荐人信息 -->
+                    <div class="form-section">
+                        <div class="form-section-title">推荐人信息（系统自动填充）</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">推荐人姓名</label>
+                                <input type="text" id="dealerSponsorName" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">推荐人ID</label>
+                                <input type="text" id="dealerSponsorId" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- 银行信息 -->
+                    <div class="form-section">
+                        <div class="form-section-title">银行信息（系统自动填充）</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">银行名称</label>
+                                <input type="text" id="dealerBankName" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">银行账号</label>
+                                <input type="text" id="dealerBankAccount" class="form-control" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group form-group-full">
+                                <label class="form-label">账户持有人姓名</label>
+                                <input type="text" id="dealerBankHolder" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- 确认条款 -->
+                    <div class="form-checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" class="checkbox-input">
+                            <span class="checkbox-text">我确认以上信息真实有效，并同意经销商条款</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="dealer-modal-footer">
+                <button class="btn btn-secondary" onclick="closeDealerModal()">取消</button>
+                <button class="btn btn-primary" id="dealerNextBtn" onclick="showPDFTerms()" disabled>查看条款并继续</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- PDF条款预览弹窗 -->
+    <div class="dealer-modal-overlay" id="pdfTermsModal">
+        <div class="dealer-modal-container pdf-terms-container">
+            <div class="dealer-modal-header">
+                <div class="dealer-modal-title">经销商申请条款</div>
+                <button class="dealer-modal-close" onclick="closePDFTerms()">×</button>
+            </div>
+            <div class="dealer-modal-body pdf-terms-body">
+                <div class="terms-document">
+                    <div class="terms-header">
+                        <div class="terms-logo">ELKEN</div>
+                        <div class="terms-title">DEALER APPLICATION FORM</div>
+                        <div class="terms-subtitle">经销商申请表 / BORANG PERMOHONAN PENGEGAR</div>
+                    </div>
+                    
+                    <div class="terms-content">
+                        <div class="terms-section">
+                            <h3>TERMS OF AGREEMENT / 条款协议 / SYARAT-SYARAT PERJANJIAN</h3>
+                            
+                            <div class="terms-item">
+                                <p><strong>1.</strong> I am 18 years old and above and eligible to apply to Company as its Dealer.</p>
+                                <p class="terms-cn">我已满18岁及以上，有资格申请成为公司经销商。</p>
+                                <p class="terms-bm">Saya berusia 18 tahun dan ke atas dan berkelayakan untuk memohon kepada Syarikat sebagai Pengegar.</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>2.</strong> I have read and agree to comply with the terms herein, Elken Dealers' Rules and Regulations ("R&R"), Elken Marketing Plan (collectively referred to as the "Agreement"), Direct Sales & Anti-Pyramid Scheme Act 1993 (Act 500), and any applicable regulations and relevant laws.</p>
+                                <p class="terms-cn">我已阅读并同意遵守本条款、经销商规则条例（"R&R"）、营销计划（统称"协议"）、1993年直销及反金字塔计划法令及相关法律法规。</p>
+                                <p class="terms-bm">Saya telah membaca dan bersetuju untuk mematuhi terma-terma di sini, Peraturan dan Undang-undang Pengegar Elken ("R&R"), Pelan Pemasaran Elken (secara kolektif dirujuk sebagai "Perjanjian"), Akta Jualan Langsung & Skim Anti-Piramid 1993 (Akta 500), dan mana-mana peraturan dan undang-undang yang berkaitan.</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>3.</strong> This application is strictly by a natural person, not company or organization, and the Company reserves the right to accept or reject this application for any reason whatsoever at its discretion.</p>
+                                <p class="terms-cn">本申请仅限个人，不适用于公司或组织，公司保留接受或拒绝申请的权利。</p>
+                                <p class="terms-bm">Permohonan ini adalah secara ketat oleh perseorangan, bukan syarikat atau organisasi, dan Syarikat berhak untuk menerima atau menolak permohonan ini atas apa-apa sebab sekalipun.</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>4.</strong> I understand that I am responsible for any errors contained therein and may result in termination of this Agreement.</p>
+                                <p class="terms-cn">我理解我对其中包含的任何错误负责，可能导致本协议终止。</p>
+                                <p class="terms-bm">Saya faham bahawa saya bertanggungjawab terhadap sebarang kesilapan yang terkandung di dalamnya dan boleh mengakibatkan penamatan Perjanjian ini.</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>5.</strong> I consent to the processing of my personal data in accordance with the Elken's Personal Data Protection Notice as stated in Elken's website at www.elken.com</p>
+                                <p class="terms-cn">我同意根据爱康个人数据保护通知处理我的个人数据，详见www.elken.com</p>
+                                <p class="terms-bm">Saya bersetuju kepada pemprosesan data peribadi saya selaras dengan Notis Perlindungan Data Peribadi Elken seperti yang dinyatakan dalam laman web www.elken.com</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>6.</strong> The term of this Agreement is 1 year. If I fail to accumulate thirty (30) BV over 12 months, or if my dealership is cancelled or terminated for any reason, I understand that I shall no longer be entitled to the status of my dealership and all benefits and entitlements under the Elken Marketing Plan shall be forfeited.</p>
+                                <p class="terms-cn">本协议期限为1年。如果我无法在12个月内累积30 BV，或经销商资格被取消，我将不再享有经销商身份及所有权益。</p>
+                                <p class="terms-bm">Tempoh Perjanjian ini adalah selama 1 tahun. Jika saya gagal mengumpul tiga puluh (30) BV dalam tempoh 12 bulan, atau jika kelayakan Pengegar saya dibatalkan atau ditamatkan atas apa-apa sebab, saya faham bahawa saya tidak lagi berhak memiliki status Pengegar dan semua faedah dan kelayakan di bawah Pelan Pemasaran Elken akan terbatal.</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>7.</strong> The Company reserves the right to terminate this Agreement upon 30 days notice if the Company elects to: cease business operations; dissolve as a business entity; or terminate distribution of its products and/or services via direct selling channels.</p>
+                                <p class="terms-cn">公司保留在以下情况下提前30天通知终止本协议的权利：停止营业、解散业务实体、或终止直销渠道。</p>
+                                <p class="terms-bm">Syarikat berhak untuk menamatkan Perjanjian ini dengan notis 30 hari jika Syarikat memilih untuk: menamatkan operasi perniagaan; membubarkan sebagai entiti perniagaan; atau menamatkan pengedaran produk dan/atau perkhidmatan melalui saluran jualan langsung.</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>8.</strong> I understand that this Agreement may be amended at Company's sole discretion, and I agree to abide by all such amendments thereof.</p>
+                                <p class="terms-cn">我理解本协议可由公司自行修订，我同意遵守所有修订条款。</p>
+                                <p class="terms-bm">Saya faham bahawa Perjanjian ini boleh dipinda mengikut budi bicara Syarikat, dan saya bersetuju untuk mematuhi semua pindaan tersebut.</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>9.</strong> This Agreement shall be governed by and construed in accordance with the laws of Malaysia.</p>
+                                <p class="terms-cn">本协议受马来西亚法律管辖并按其解释。</p>
+                                <p class="terms-bm">Perjanjian ini akan ditadbir dan ditafsirkan mengikut undang-undang Malaysia.</p>
+                            </div>
+                            
+                            <div class="terms-item">
+                                <p><strong>10.</strong> In the event of any inconsistency amongst English, Chinese and Bahasa Malaysia versions of this Agreement, the English version shall prevail.</p>
+                                <p class="terms-cn">如英文、中文和马来文版本有任何不一致，以英文版本为准。</p>
+                                <p class="terms-bm">Sekiranya terdapat sebarang percanggahan antara versi Bahasa Inggeris, Bahasa Cina dan Bahasa Malaysia Perjanjian ini, versi Bahasa Inggeris akan diutamakan.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="terms-warning">
+                            <p><strong>COOLING-OFF PERIOD / 冷静期 / TEMPOH PENYEJUKAN</strong></p>
+                            <p>This contract is subject to a cooling-off period of TEN WORKING DAYS / SEVEN WORKING DAYS for MALAYSIA & SINGAPORE respectively.</p>
+                            <p class="terms-cn">本合同受冷静期约束，马来西亚为10个工作日，新加坡为7个工作日。</p>
+                            <p class="terms-bm">Kontrak ini tertakluk kepada tempoh penyejukan SEPULUH HARI BEKERJA / TUJUH HARI BEKERJA untuk MALAYSIA & SINGAPURA masing-masing.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="terms-confirm">
+                        <label class="terms-checkbox-label">
+                            <input type="checkbox" id="agreeTermsPDF" class="terms-checkbox-input">
+                            <span class="terms-checkbox-text">
+                                I confirm that I have read, understood and agree to all the terms and conditions above.<br>
+                                我确认我已阅读、理解并同意以上所有条款。<br>
+                                Saya mengesahkan bahawa saya telah membaca, memahami dan bersetuju dengan semua terma dan syarat di atas.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="dealer-modal-footer">
+                <button class="btn btn-secondary" onclick="closePDFTerms()">返回</button>
+                <button class="btn btn-primary" id="termsAgreeBtn" onclick="fillAndPreviewPDF()" disabled>同意并预览填写后的PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 生成的PDF预览弹窗 -->
+    <div class="dealer-modal-overlay" id="pdfGeneratedModal">
+        <div class="dealer-modal-container pdf-preview-container">
+            <div class="dealer-modal-header">
+                <div class="dealer-modal-title">经销商申请表（已生成）</div>
+                <button class="dealer-modal-close" onclick="closeGeneratedPDF()">×</button>
+            </div>
+            <div class="dealer-modal-body pdf-preview-body">
+                <div class="pdf-document">
+                    <div class="pdf-header">
+                        <div class="pdf-logo">ELKEN</div>
+                        <div class="pdf-form-no">Form No.: CS-F05<br>Rev No.: F</div>
+                    </div>
+                    <div class="pdf-title">DEALER APPLICATION FORM</div>
+                    <div class="pdf-subtitle">PLEASE FILL IN USING BLOCK LETTERS</div>
+                    
+                    <div class="pdf-section">
+                        <div class="pdf-section-title">APPLICANT'S PARTICULARS</div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field">
+                                <span class="pdf-label">Name:</span>
+                                <span class="pdf-value" id="genPdfName"></span>
+                            </div>
+                            <div class="pdf-field">
+                                <span class="pdf-label">Member ID:</span>
+                                <span class="pdf-value" id="genPdfMemberId"></span>
+                            </div>
+                        </div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field">
+                                <span class="pdf-label">ID Card No.:</span>
+                                <span class="pdf-value" id="genPdfIdCard"></span>
+                            </div>
+                            <div class="pdf-field">
+                                <span class="pdf-label">Date of Birth:</span>
+                                <span class="pdf-value" id="genPdfBirthDate"></span>
+                            </div>
+                        </div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field">
+                                <span class="pdf-label">Nationality:</span>
+                                <span class="pdf-value" id="genPdfCountry"></span>
+                            </div>
+                            <div class="pdf-field">
+                                <span class="pdf-label">Gender:</span>
+                                <span class="pdf-value" id="genPdfGender"></span>
+                            </div>
+                        </div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field pdf-field-full">
+                                <span class="pdf-label">Contact Number:</span>
+                                <span class="pdf-value" id="genPdfPhone"></span>
+                            </div>
+                        </div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field pdf-field-full">
+                                <span class="pdf-label">Email:</span>
+                                <span class="pdf-value" id="genPdfEmail"></span>
+                            </div>
+                        </div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field pdf-field-full">
+                                <span class="pdf-label">Address:</span>
+                                <span class="pdf-value" id="genPdfAddress"></span>
+                            </div>
+                        </div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field">
+                                <span class="pdf-label">City:</span>
+                                <span class="pdf-value" id="genPdfCity"></span>
+                            </div>
+                            <div class="pdf-field">
+                                <span class="pdf-label">Postcode:</span>
+                                <span class="pdf-value" id="genPdfPostcode"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pdf-section">
+                        <div class="pdf-section-title">SPONSOR'S PARTICULARS</div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field">
+                                <span class="pdf-label">Sponsor Name:</span>
+                                <span class="pdf-value" id="genPdfSponsorName"></span>
+                            </div>
+                            <div class="pdf-field">
+                                <span class="pdf-label">Sponsor ID:</span>
+                                <span class="pdf-value" id="genPdfSponsorId"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pdf-section">
+                        <div class="pdf-section-title">BANK INFORMATION</div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field">
+                                <span class="pdf-label">Bank Name:</span>
+                                <span class="pdf-value" id="genPdfBankName"></span>
+                            </div>
+                            <div class="pdf-field">
+                                <span class="pdf-label">Account Number:</span>
+                                <span class="pdf-value" id="genPdfBankAccount"></span>
+                            </div>
+                        </div>
+                        <div class="pdf-field-row">
+                            <div class="pdf-field pdf-field-full">
+                                <span class="pdf-label">Account Holder:</span>
+                                <span class="pdf-value" id="genPdfBankHolder"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pdf-footer">
+                        <div class="pdf-checkbox-line">
+                            <span class="pdf-checkbox">☐</span>
+                            <span class="pdf-checkbox-text">I confirm that all the information I provided is up-to-date. I've read and understood the terms and conditions and agree to abide by them.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dealer-modal-footer">
+                <button class="btn btn-secondary" onclick="backToTemplateFromGenerated()">返回</button>
+                <button class="btn btn-primary" onclick="confirmGeneratedPDFAndSign()">确认并前往签字</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 手写签名弹窗 -->
+    <div class="dealer-modal-overlay" id="signatureModal">
+        <div class="dealer-modal-container signature-container">
+            <div class="dealer-modal-header">
+                <div class="dealer-modal-title">手写签名</div>
+                <button class="dealer-modal-close" onclick="closeSignatureModal()">×</button>
+            </div>
+            <div class="dealer-modal-body">
+                <div class="signature-hint">请在下方空白区域手写签名</div>
+                <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+                <button class="btn btn-secondary btn-clear" onclick="clearSignature()">清除重签</button>
+            </div>
+            <div class="dealer-modal-footer">
+                <button class="btn btn-secondary" onclick="backToForm()">返回</button>
+                <button class="btn btn-primary" onclick="submitDealerApplication()">确认提交</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功提示弹窗 -->
+    <div class="dealer-modal-overlay" id="successModal">
+        <div class="dealer-modal-container success-container">
+            <div class="success-icon">✓</div>
+            <div class="success-title">申请提交成功</div>
+            <div class="success-message">您的经销商申请已成功提交，我们将尽快审核。</div>
+            <button class="btn btn-primary" onclick="closeSuccessModal()">确定</button>
+        </div>
+    </div>
+
+    <style>
+        /* 经销商申请表单样式 */
+        .dealer-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .dealer-modal-overlay.active {
+            display: flex;
+        }
+
+        .dealer-modal-container {
+            background-color: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .dealer-modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dealer-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .dealer-modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background-color: #f3f4f6;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dealer-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .dealer-modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .form-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group-full {
+            width: 100%;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #dc2626;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: white;
+        }
+
+        .form-control:read-only {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-checkbox-group {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-input {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .checkbox-text {
+            font-size: 13px;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        /* 签名样式 */
+        .signature-container {
+            max-width: 400px;
+        }
+
+        .signature-hint {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .signature-canvas {
+            width: 100%;
+            height: 200px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            background-color: #fafafa;
+            cursor: crosshair;
+        }
+
+        .btn-clear {
+            margin-top: 12px;
+            width: 100%;
+        }
+
+        /* 成功提示样式 */
+        .success-container {
+            max-width: 320px;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin: 0 auto 20px;
+        }
+
+        .success-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .success-message {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #0066cc;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0052a3;
+        }
+
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        /* PDF预览提示 */
+        .pdf-preview-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+
+        .info-hint {
+            font-size: 13px;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-hint::before {
+            content: 'ℹ️';
+            font-size: 16px;
+        }
+
+        /* PDF预览样式 */
+        .pdf-preview-container {
+            max-width: 600px;
+        }
+
+        .pdf-preview-body {
+            background-color: #f3f4f6;
+            padding: 20px;
+        }
+
+        .pdf-document {
+            background-color: white;
+            padding: 30px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-family: Arial, sans-serif;
+        }
+
+        .pdf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e3a8a;
+            padding-bottom: 15px;
+        }
+
+        .pdf-logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .pdf-form-no {
+            font-size: 11px;
+            color: #666;
+            text-align: right;
+            line-height: 1.4;
+        }
+
+        .pdf-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+
+        .pdf-subtitle {
+            font-size: 11px;
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .pdf-section {
+            margin-bottom: 20px;
+            border: 1px solid #1e3a8a;
+            padding: 15px;
+        }
+
+        .pdf-section-title {
+            background-color: #1e3a8a;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 10px;
+            margin: -15px -15px 12px -15px;
+        }
+
+        .pdf-field-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .pdf-field {
+            flex: 1;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .pdf-field-full {
+            flex: 2;
+        }
+
+        .pdf-label {
+            font-size: 11px;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .pdf-value {
+            font-size: 12px;
+            color: #111827;
+            font-weight: 600;
+            border-bottom: 1px solid #d1d5db;
+            flex: 1;
+            padding-bottom: 2px;
+            min-height: 18px;
+        }
+
+        .pdf-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pdf-checkbox-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .pdf-checkbox {
+            font-size: 16px;
+            color: #374151;
+        }
+
+        .pdf-checkbox-text {
+            font-size: 11px;
+            color: #374151;
+            line-height: 1.4;
+        }
+
+        .pdf-value-empty {
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        /* 条款页面样式 */
+        .pdf-terms-container {
+            max-width: 700px;
+        }
+
+        .pdf-terms-body {
+            background-color: #f9fafb;
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .terms-document {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .terms-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1e3a8a;
+        }
+
+        .terms-logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+
+        .terms-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+
+        .terms-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .terms-content {
+            margin-bottom: 24px;
+        }
+
+        .terms-section h3 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 16px;
+            padding: 8px 12px;
+            background-color: #dbeafe;
+            border-radius: 4px;
+        }
+
+        .terms-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .terms-item:last-child {
+            border-bottom: none;
+        }
+
+        .terms-item p {
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 4px;
+            color: #374151;
+        }
+
+        .terms-item p strong {
+            color: #111827;
+        }
+
+        .terms-cn {
+            color: #6b7280;
+            font-size: 11px;
+        }
+
+        .terms-bm {
+            color: #6b7280;
+            font-size: 11px;
+            font-style: italic;
+        }
+
+        .terms-warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .terms-warning p {
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #92400e;
+        }
+
+        .terms-confirm {
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .terms-checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .terms-checkbox-input {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .terms-checkbox-text {
+            font-size: 12px;
+            color: #374151;
+            line-height: 1.6;
+        }
+    </style>
+
+    <script>
+        // 经销商申请相关功能
+        let isDrawing = false;
+        let signatureCanvas, signatureCtx;
+
+        // 检查是否需要显示经销商申请表
+        function checkDealerApplication() {
+            // 从localStorage检查是否已申请过
+            const hasApplied = localStorage.getItem('dealerApplicationSubmitted');
+            const isStockist = localStorage.getItem('isStockist') === 'true';
+            
+            console.log('检查经销商申请:', { hasApplied, isStockist });
+            
+            // 如果不是stockist且未申请过，显示申请表
+            if (!isStockist && !hasApplied) {
+                console.log('显示经销商申请表');
+                // 延迟显示，等页面加载完成
+                setTimeout(() => {
+                    openDealerModal();
+                }, 500);
+            } else {
+                console.log('不显示申请表:', isStockist ? '已是stockist' : '已申请过');
+            }
+        }
+
+        // 打开经销商申请表
+        function openDealerModal() {
+            console.log('正在打开经销商申请表...');
+            const modal = document.getElementById('dealerModal');
+            console.log('dealerModal 元素:', modal);
+            
+            if (modal) {
+                modal.classList.add('active');
+                console.log('已添加 active 类');
+                
+                // 填充会员信息
+                fillMemberInfo();
+                
+                // 绑定复选框事件
+                const agreeTerms = document.getElementById('agreeTerms');
+                if (agreeTerms) {
+                    agreeTerms.addEventListener('change', function() {
+                        document.getElementById('dealerNextBtn').disabled = !this.checked;
+                    });
+                }
+            } else {
+                console.error('找不到 dealerModal 元素');
+            }
+        }
+
+        // 关闭经销商申请表
+        function closeDealerModal() {
+            document.getElementById('dealerModal').classList.remove('active');
+        }
+
+        // 填充会员信息 - 从系统获取并填充到表单
+        function fillMemberInfo() {
+            // 模拟从系统API获取的完整会员信息
+            // 实际项目中这些数据应该从后端API获取
+            const memberData = {
+                name: document.querySelector('.card:nth-child(3) .data-row:nth-child(1) .data-value')?.textContent || 'EW1',
+                memberId: document.querySelector('.card:nth-child(3) .data-row:nth-child(2) .data-value')?.textContent || '100001234',
+                idCard: '811218085510', // 从系统获取
+                phone: '60165942500', // 从系统获取
+                address: '16 PERSIARAN PEGOH AMAN 4 TAMAN DESA AMAN', // 从系统获取
+                city: 'Lahat', // 从系统获取
+                postcode: '31500', // 从系统获取
+                country: 'Malaysia', // 从系统获取
+                birthDate: '1970-01-01', // 从系统获取
+                gender: 'Female', // 从系统获取
+                email: 'tehyinkhim@gmail.com', // 从系统获取
+                sponsorName: document.querySelector('.card:nth-child(5) .data-row:nth-child(2) .data-value')?.textContent || 'Choong Bang Seng',
+                sponsorId: document.querySelector('.card:nth-child(5) .data-row:nth-child(1) .data-value')?.textContent || '000',
+                bankName: 'Maybank', // 从系统获取
+                bankAccount: '1234567890', // 从系统获取
+                bankHolder: 'TEH YIN KHIM' // 从系统获取
+            };
+            
+            // 填充所有字段
+            document.getElementById('dealerName').value = memberData.name;
+            document.getElementById('dealerMemberId').value = memberData.memberId;
+            document.getElementById('dealerIdCard').value = memberData.idCard;
+            document.getElementById('dealerPhone').value = memberData.phone;
+            document.getElementById('dealerAddress').value = memberData.address;
+            document.getElementById('dealerCity').value = memberData.city;
+            document.getElementById('dealerPostcode').value = memberData.postcode;
+            document.getElementById('dealerCountry').value = memberData.country;
+            document.getElementById('dealerBirthDate').value = memberData.birthDate;
+            document.getElementById('dealerGender').value = memberData.gender;
+            document.getElementById('dealerEmail').value = memberData.email;
+            document.getElementById('dealerSponsorName').value = memberData.sponsorName;
+            document.getElementById('dealerSponsorId').value = memberData.sponsorId;
+            document.getElementById('dealerBankName').value = memberData.bankName;
+            document.getElementById('dealerBankAccount').value = memberData.bankAccount;
+            document.getElementById('dealerBankHolder').value = memberData.bankHolder;
+        }
+
+        // 显示PDF条款页面
+        function showPDFTerms() {
+            closeDealerModal();
+            document.getElementById('pdfTermsModal').classList.add('active');
+            
+            // 绑定条款复选框事件
+            document.getElementById('agreeTermsPDF').addEventListener('change', function() {
+                document.getElementById('termsAgreeBtn').disabled = !this.checked;
+            });
+        }
+
+        // 关闭PDF条款页面
+        function closePDFTerms() {
+            document.getElementById('pdfTermsModal').classList.remove('active');
+            openDealerModal();
+        }
+
+        // 同意条款并预览填写后的PDF
+        function fillAndPreviewPDF() {
+            // 系统传参填充PDF
+            document.getElementById('genPdfName').textContent = document.getElementById('dealerName').value;
+            document.getElementById('genPdfMemberId').textContent = document.getElementById('dealerMemberId').value;
+            document.getElementById('genPdfIdCard').textContent = document.getElementById('dealerIdCard').value;
+            document.getElementById('genPdfBirthDate').textContent = document.getElementById('dealerBirthDate').value;
+            document.getElementById('genPdfCountry').textContent = document.getElementById('dealerCountry').value;
+            document.getElementById('genPdfGender').textContent = document.getElementById('dealerGender').value;
+            document.getElementById('genPdfPhone').textContent = document.getElementById('dealerPhone').value;
+            document.getElementById('genPdfEmail').textContent = document.getElementById('dealerEmail').value;
+            document.getElementById('genPdfAddress').textContent = document.getElementById('dealerAddress').value;
+            document.getElementById('genPdfCity').textContent = document.getElementById('dealerCity').value;
+            document.getElementById('genPdfPostcode').textContent = document.getElementById('dealerPostcode').value;
+            document.getElementById('genPdfSponsorName').textContent = document.getElementById('dealerSponsorName').value;
+            document.getElementById('genPdfSponsorId').textContent = document.getElementById('dealerSponsorId').value;
+            document.getElementById('genPdfBankName').textContent = document.getElementById('dealerBankName').value;
+            document.getElementById('genPdfBankAccount').textContent = document.getElementById('dealerBankAccount').value;
+            document.getElementById('genPdfBankHolder').textContent = document.getElementById('dealerBankHolder').value;
+            
+            // 关闭条款页面，显示填充后的PDF
+            document.getElementById('pdfTermsModal').classList.remove('active');
+            document.getElementById('pdfGeneratedModal').classList.add('active');
+        }
+
+        // 关闭生成的PDF预览
+        function closeGeneratedPDF() {
+            document.getElementById('pdfGeneratedModal').classList.remove('active');
+        }
+
+        // 从生成的PDF返回条款页面
+        function backToTemplateFromGenerated() {
+            document.getElementById('pdfGeneratedModal').classList.remove('active');
+            document.getElementById('pdfTermsModal').classList.add('active');
+        }
+
+        // 确认生成的PDF并前往签名
+        function confirmGeneratedPDFAndSign() {
+            document.getElementById('pdfGeneratedModal').classList.remove('active');
+            openSignatureModal();
+        }
+
+        // 打开签名弹窗
+        function openSignatureModal() {
+            const modal = document.getElementById('signatureModal');
+            modal.classList.add('active');
+            
+            // 初始化画布
+            initSignatureCanvas();
+        }
+
+        // 关闭签名弹窗
+        function closeSignatureModal() {
+            document.getElementById('signatureModal').classList.remove('active');
+        }
+
+        // 返回生成的PDF预览
+        function backToForm() {
+            closeSignatureModal();
+            document.getElementById('pdfGeneratedModal').classList.add('active');
+        }
+
+        // 显示PDF模板预览（兼容性保留）
+        function showPDFPreview() {
+            showPDFTerms();
+        }
+
+        // 关闭PDF模板预览（兼容性保留）
+        function closePDFTemplate() {
+            closePDFTerms();
+        }
+
+        // 生成PDF（兼容性保留）
+        function generatePDF() {
+            fillAndPreviewPDF();
+        }
+
+        // 初始化签名画布
+        function initSignatureCanvas() {
+            signatureCanvas = document.getElementById('signatureCanvas');
+            signatureCtx = signatureCanvas.getContext('2d');
+            
+            // 设置画布大小
+            const rect = signatureCanvas.getBoundingClientRect();
+            signatureCanvas.width = rect.width;
+            signatureCanvas.height = rect.height;
+            
+            // 设置画笔样式
+            signatureCtx.strokeStyle = '#111827';
+            signatureCtx.lineWidth = 2;
+            signatureCtx.lineCap = 'round';
+            signatureCtx.lineJoin = 'round';
+            
+            // 绑定事件
+            signatureCanvas.addEventListener('mousedown', startDrawing);
+            signatureCanvas.addEventListener('mousemove', draw);
+            signatureCanvas.addEventListener('mouseup', stopDrawing);
+            signatureCanvas.addEventListener('mouseout', stopDrawing);
+            
+            // 触摸事件
+            signatureCanvas.addEventListener('touchstart', handleTouch);
+            signatureCanvas.addEventListener('touchmove', handleTouch);
+            signatureCanvas.addEventListener('touchend', stopDrawing);
+        }
+
+        // 开始绘画
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = signatureCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            signatureCtx.beginPath();
+            signatureCtx.moveTo(x, y);
+        }
+
+        // 绘画
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = signatureCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            signatureCtx.lineTo(x, y);
+            signatureCtx.stroke();
+        }
+
+        // 停止绘画
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        // 处理触摸事件
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = signatureCanvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            if (e.type === 'touchstart') {
+                isDrawing = true;
+                signatureCtx.beginPath();
+                signatureCtx.moveTo(x, y);
+            } else if (e.type === 'touchmove' && isDrawing) {
+                signatureCtx.lineTo(x, y);
+                signatureCtx.stroke();
+            }
+        }
+
+        // 清除签名
+        function clearSignature() {
+            if (signatureCtx && signatureCanvas) {
+                signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+            }
+        }
+
+        // 提交经销商申请
+        function submitDealerApplication() {
+            // 检查是否有签名
+            const imageData = signatureCtx.getImageData(0, 0, signatureCanvas.width, signatureCanvas.height);
+            const hasSignature = imageData.data.some(channel => channel !== 0);
+            
+            if (!hasSignature) {
+                alert('请先手写签名');
+                return;
+            }
+            
+            // 保存申请状态
+            localStorage.setItem('dealerApplicationSubmitted', 'true');
+            
+            // 关闭签名弹窗
+            closeSignatureModal();
+            
+            // 显示成功提示
+            document.getElementById('successModal').classList.add('active');
+        }
+
+        // 关闭成功提示
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+
+        // 页面加载时检查
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，检查 dealerModal:', document.getElementById('dealerModal'));
+            checkDealerApplication();
+        });
+
+        // 测试用：清除申请状态
+        function resetDealerApplication() {
+            localStorage.removeItem('dealerApplicationSubmitted');
+            localStorage.removeItem('isStockist');
+            alert('已重置申请状态，请刷新页面');
+        }
+    </script>
 
     </body>
 </html>
