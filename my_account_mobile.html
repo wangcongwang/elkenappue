@@ -1163,6 +1163,14 @@
                         <label class="form-label required">Email Address</label>
                         <input type="email" id="emailAddress" class="form-control" placeholder="Please enter email address" required>
                     </div>
+                    <!-- 邮箱验证码区域 - 初始隐藏，修改邮箱后显示 -->
+                    <div class="form-group" id="emailVerificationGroup" style="display: none;">
+                        <div class="verification-group">
+                            <input type="text" class="form-control" placeholder="Verification code" required inputmode="numeric">
+                            <button class="btn btn-primary verification-btn" id="emailSendCodeBtn">Request OTP</button>
+                            <span class="countdown-text" id="emailCountdown" style="display: none;"></span>
+                        </div>
+                    </div>
                 </div>
                 <div id="phoneFields" class="contact-fields">
                     <div class="form-group">
@@ -1184,10 +1192,13 @@
                             </select>
                             <input type="tel" id="mobileNumber" class="form-control" placeholder="Please enter mobile number" required inputmode="tel">
                         </div>
-                        <div class="verification-group" style="margin-top: 12px;">
+                    </div>
+                    <!-- 手机验证码区域 - 初始隐藏，修改手机号后显示 -->
+                    <div class="form-group" id="phoneVerificationGroup" style="display: none;">
+                        <div class="verification-group">
                             <input type="text" class="form-control" placeholder="Verification code" required inputmode="numeric">
-                            <button class="btn btn-primary verification-btn" id="sendCodeBtn">Request OTP</button>
-                            <span class="countdown-text" id="countdown" style="display: none;"></span>
+                            <button class="btn btn-primary verification-btn" id="phoneSendCodeBtn">Request OTP</button>
+                            <span class="countdown-text" id="phoneCountdown" style="display: none;"></span>
                         </div>
                     </div>
                 </div>
@@ -1890,9 +1901,13 @@
                 if (value === 'email') {
                     emailInput.disabled = false;
                     mobileInput.disabled = true;
+                    // 隐藏手机验证码
+                    document.getElementById('phoneVerificationGroup').style.display = 'none';
                 } else {
                     emailInput.disabled = true;
                     mobileInput.disabled = false;
+                    // 隐藏邮箱验证码
+                    document.getElementById('emailVerificationGroup').style.display = 'none';
                 }
             });
         });
@@ -1904,6 +1919,74 @@
         } else {
             document.getElementById('emailAddress').disabled = true;
         }
+
+        // 存储原始邮箱和手机号值（页面加载时）
+        let originalEmail = '';
+        let originalPhone = '';
+
+        // DOM加载完成后绑定所有事件
+        document.addEventListener('DOMContentLoaded', function() {
+            // 邮箱输入框 - 当值与原始值不同时显示验证码区域
+            const emailInput = document.getElementById('emailAddress');
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    const emailVerificationGroup = document.getElementById('emailVerificationGroup');
+                    if (this.value && this.value !== originalEmail) {
+                        emailVerificationGroup.style.display = 'block';
+                    } else {
+                        emailVerificationGroup.style.display = 'none';
+                    }
+                });
+            }
+
+            // 手机号输入框 - 当值与原始值不同时显示验证码区域
+            const mobileInput = document.getElementById('mobileNumber');
+            if (mobileInput) {
+                mobileInput.addEventListener('input', function() {
+                    const phoneVerificationGroup = document.getElementById('phoneVerificationGroup');
+                    // 只有当值与原始值不同时才显示验证码区域
+                    if (this.value && this.value !== originalPhone) {
+                        phoneVerificationGroup.style.display = 'block';
+                    } else {
+                        phoneVerificationGroup.style.display = 'none';
+                    }
+                });
+            }
+
+            // 邮箱发送验证码按钮
+            const emailSendBtn = document.getElementById('emailSendCodeBtn');
+            if (emailSendBtn) {
+                emailSendBtn.addEventListener('click', function() {
+                    const emailAddress = document.getElementById('emailAddress').value;
+                    if (!emailAddress) {
+                        alert('请先填写邮箱地址');
+                        return;
+                    }
+                    // 简单的邮箱格式验证
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailAddress)) {
+                        alert('请输入有效的邮箱地址');
+                        return;
+                    }
+                    startCountdown('emailCountdown', 'emailSendCodeBtn');
+                    alert('验证码已发送到 ' + emailAddress);
+                });
+            }
+
+            // 手机发送验证码按钮
+            const phoneSendBtn = document.getElementById('phoneSendCodeBtn');
+            if (phoneSendBtn) {
+                phoneSendBtn.addEventListener('click', function() {
+                    const mobileNumber = document.getElementById('mobileNumber').value;
+                    if (!mobileNumber) {
+                        alert('请先填写手机号');
+                        return;
+                    }
+                    startCountdown('phoneCountdown', 'phoneSendCodeBtn');
+                    alert('验证码已发送到手机号');
+                });
+            }
+        });
 
         // 支付方式切换
         document.querySelectorAll('input[name="payment"]').forEach(input => {
@@ -1972,17 +2055,6 @@
                 }
             }, 1000);
         }
-
-        // 发送验证码按钮
-        document.getElementById('sendCodeBtn').addEventListener('click', function() {
-            const mobileNumber = document.getElementById('mobileNumber').value;
-            if (!mobileNumber) {
-                alert('请先填写手机号');
-                return;
-            }
-            startCountdown('countdown', 'sendCodeBtn');
-            alert('验证码已发送');
-        });
 
         // 地区选择
         document.querySelectorAll('.region-item').forEach(item => {
@@ -2876,13 +2948,13 @@
             
             // 验证首选联系人对应的字段
             if (preferredContact === 'email') {
-                const email = document.getElementById('email').value;
+                const email = document.getElementById('emailAddress').value;
                 if (!email.trim()) {
                     isValid = false;
                     errorMessage = '请填写电子邮箱';
                 }
             } else if (preferredContact === 'phone') {
-                const phone = document.getElementById('phone').value;
+                const phone = document.getElementById('mobileNumber').value;
                 if (!phone.trim()) {
                     isValid = false;
                     errorMessage = '请填写手机号码';
