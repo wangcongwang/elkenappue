@@ -3603,6 +3603,13 @@
                 </div>
             </div>
         </div>
+        <!-- 竖屏提示层 -->
+        <div class="signature-orientation-overlay" id="orientationOverlay">
+            <div class="signature-orientation-icon">↻</div>
+            <div class="signature-orientation-text">请将设备旋转至横屏模式进行签名</div>
+            <div class="signature-orientation-sub">Please rotate to landscape mode</div>
+            <div class="signature-orientation-sub">Sila putar ke mod landskap</div>
+        </div>
     </div>
 
     <!-- 成功提示弹窗 -->
@@ -3912,24 +3919,59 @@
         }
 
         /* 强制横屏提示 */
+        .signature-orientation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #003366;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 10001;
+            padding: 40px;
+        }
+        .signature-orientation-overlay.show {
+            display: flex;
+        }
+        .signature-fullscreen:fullscreen .signature-orientation-overlay.show {
+            display: flex;
+        }
+        .signature-fullscreen:-webkit-full-screen .signature-orientation-overlay.show {
+            display: flex;
+        }
+        .signature-orientation-icon {
+            font-size: 64px;
+            color: white;
+            margin-bottom: 24px;
+            animation: rotateDevice 2s ease-in-out infinite;
+        }
+        @keyframes rotateDevice {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .signature-orientation-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .signature-orientation-sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            line-height: 1.8;
+        }
+
         @media screen and (orientation: portrait) {
-            .signature-fullscreen.active::before {
-                content: "请将设备旋转至横屏模式进行签名\APlease rotate your device to landscape mode\ASila putar peranti anda ke mod landskap";
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: #003366;
-                color: white;
+            .signature-fullscreen.active .signature-orientation-overlay {
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-                font-size: 18px;
-                white-space: pre;
-                line-height: 1.8;
-                z-index: 10001;
             }
         }
 
@@ -4477,15 +4519,45 @@
                 });
             }
 
+            // 检测当前方向并控制提示层
+            checkOrientation();
+            // 监听方向变化
+            window.addEventListener('orientationchange', onOrientationChange);
+            window.addEventListener('resize', onOrientationChange);
+
             // 延迟初始化画布，确保布局完成
             setTimeout(function() {
                 initSignatureCanvas();
             }, 100);
         }
 
+        // 检测设备方向
+        function checkOrientation() {
+            const overlay = document.getElementById('orientationOverlay');
+            if (!overlay) return;
+            if (window.innerHeight > window.innerWidth) {
+                overlay.classList.add('show');
+            } else {
+                overlay.classList.remove('show');
+            }
+        }
+
+        // 方向变化事件处理
+        function onOrientationChange() {
+            checkOrientation();
+            // 重新初始化画布以适应新尺寸
+            setTimeout(function() {
+                initSignatureCanvas();
+            }, 300);
+        }
+
         // 关闭签名弹窗
         function closeSignatureModal() {
             document.getElementById('signatureModal').classList.remove('active');
+
+            // 移除方向监听
+            window.removeEventListener('orientationchange', onOrientationChange);
+            window.removeEventListener('resize', onOrientationChange);
 
             // 解锁屏幕方向
             if (screen.orientation && screen.orientation.unlock) {
