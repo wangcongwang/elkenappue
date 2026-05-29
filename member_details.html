@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会员资料</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background-color: #007aff;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .back-arrow {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-right {
+            font-size: 20px;
+            width: 60px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .status-bar {
+            background-color: #e8f4fc;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .member-card {
+            background: linear-gradient(135deg, #007aff 0%, #0056b3 100%);
+            margin: 10px;
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .card-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .card-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card-info-item:last-child,
+        .card-info-item:nth-last-child(2) {
+            border-bottom: none;
+        }
+
+        .card-info-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .card-info-value {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            color: #4cd964;
+            font-weight: 600;
+        }
+
+        .status-inactive {
+            color: #ff4444;
+            font-weight: 600;
+        }
+
+        .info-section {
+            background-color: white;
+            margin: 10px;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #007aff;
+            color: #007aff;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .info-value.highlight {
+            color: #007aff;
+            font-weight: 600;
+        }
+
+        .info-value.negative {
+            color: #ff4444;
+        }
+
+        .info-value.positive {
+            color: #4cd964;
+        }
+
+        .bonus-section {
+            background-color: white;
+            margin: 10px;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .bonus-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .bonus-icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        .bonus-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #007aff;
+        }
+
+        .country-selector {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .bonus-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .bonus-table th,
+        .bonus-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        .bonus-table th {
+            color: #666;
+            font-weight: 500;
+            background-color: #f8f9fa;
+        }
+
+        .bonus-table td:last-child {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .bonus-table tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="back-arrow" onclick="window.history.back()">←</div>
+            <div class="header-title">会员资料</div>
+        </div>
+        <div class="header-right" onclick="window.history.back()">×</div>
+    </div>
+
+    <div class="status-bar">
+        <span>业绩周期</span>
+        <span>PC 2026-05</span>
+    </div>
+
+    <div class="member-card">
+        <div class="card-title">会员资料</div>
+        <div class="card-info-grid">
+            <div class="card-info-item">
+                <span class="card-info-label">姓名</span>
+                <span class="card-info-value">EW1</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">会员ID</span>
+                <span class="card-info-value">000</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">活动状态</span>
+                <span class="card-info-value status-active">是</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">当期位阶</span>
+                <span class="card-info-value">Dealer</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">最高位阶</span>
+                <span class="card-info-value">Dealer</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">最高的三重精英等级</span>
+                <span class="card-info-value">蓝精英</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">PS</span>
+                <span class="card-info-value">0.00</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">PGS</span>
+                <span class="card-info-value">0.00</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">TGS</span>
+                <span class="card-info-value">0.00</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">QLegs</span>
+                <span class="card-info-value">0</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">Left Volume BV</span>
+                <span class="card-info-value">100.00</span>
+            </div>
+            <div class="card-info-item">
+                <span class="card-info-label">Right Volume BV</span>
+                <span class="card-info-value">2447.25</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <div class="section-title">PRP权益</div>
+        <div class="info-item">
+            <span class="info-label">当前个人PRP权益</span>
+            <span class="info-value highlight">40%</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">当前PRP分级的CPGS</span>
+            <span class="info-value">400BV</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">晋升到下一级PRP分级所需的CPGS</span>
+            <span class="info-value negative">+600BV</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">推荐的CPGS</span>
+            <span class="info-value">0.00</span>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <div class="section-title">奖励积分</div>
+        <div class="info-item">
+            <span class="info-label">销售奖金</span>
+            <span class="info-value">0.00BV</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">绩效奖金</span>
+            <span class="info-value">0.00BV</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">精英奖金</span>
+            <span class="info-value">0.00BV</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">精英成就奖金</span>
+            <span class="info-value">0.00</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">创业精英奖励</span>
+            <span class="info-value">0.00BV</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">超级精英奖励</span>
+            <span class="info-value">0.00</span>
+        </div>
+    </div>
+
+    <div class="bonus-section">
+        <div class="bonus-header">
+            <span class="bonus-icon">👑</span>
+            <span class="bonus-title">领导力奖金</span>
+        </div>
+        <select class="country-selector" id="countrySelector">
+            <option value="malaysia">Malaysia</option>
+            <option value="singapore">Singapore</option>
+            <option value="brunei">Brunei</option>
+        </select>
+        <table class="bonus-table">
+            <thead>
+                <tr>
+                    <th>等级</th>
+                    <th>奖金</th>
+                </tr>
+            </thead>
+            <tbody id="bonusTableBody">
+                <tr>
+                    <td>1. 1SDSRT</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>2. 2SDSRT</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>3. 3SDSRT</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>4. 2SDSM</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>5. 1SDSM</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>4. 3SDSM</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>7. 1SDSCROWN</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>8. 2SDSCROWN</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>8. 2SDSCROWN</td>
+                    <td>0.00BV</td>
+                </tr>
+                <tr>
+                    <td>9. 3SDSCROWN</td>
+                    <td>0.00BV</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const countryData = {
+            malaysia: [
+                { level: '1. 1SDSRT', bonus: '0.00BV' },
+                { level: '2. 2SDSRT', bonus: '0.00BV' },
+                { level: '3. 3SDSRT', bonus: '0.00BV' },
+                { level: '4. 2SDSM', bonus: '0.00BV' },
+                { level: '5. 1SDSM', bonus: '0.00BV' },
+                { level: '4. 3SDSM', bonus: '0.00BV' },
+                { level: '7. 1SDSCROWN', bonus: '0.00BV' },
+                { level: '8. 2SDSCROWN', bonus: '0.00BV' },
+                { level: '8. 2SDSCROWN', bonus: '0.00BV' },
+                { level: '9. 3SDSCROWN', bonus: '0.00BV' }
+            ],
+            singapore: [
+                { level: '1. 1SDSRT', bonus: '100.00BV' },
+                { level: '2. 2SDSRT', bonus: '150.00BV' },
+                { level: '3. 3SDSRT', bonus: '200.00BV' },
+                { level: '4. 2SDSM', bonus: '250.00BV' },
+                { level: '5. 1SDSM', bonus: '300.00BV' },
+                { level: '4. 3SDSM', bonus: '350.00BV' },
+                { level: '7. 1SDSCROWN', bonus: '400.00BV' },
+                { level: '8. 2SDSCROWN', bonus: '450.00BV' },
+                { level: '8. 2SDSCROWN', bonus: '500.00BV' },
+                { level: '9. 3SDSCROWN', bonus: '550.00BV' }
+            ],
+            brunei: [
+                { level: '1. 1SDSRT', bonus: '50.00BV' },
+                { level: '2. 2SDSRT', bonus: '75.00BV' },
+                { level: '3. 3SDSRT', bonus: '100.00BV' },
+                { level: '4. 2SDSM', bonus: '125.00BV' },
+                { level: '5. 1SDSM', bonus: '150.00BV' },
+                { level: '4. 3SDSM', bonus: '175.00BV' },
+                { level: '7. 1SDSCROWN', bonus: '200.00BV' },
+                { level: '8. 2SDSCROWN', bonus: '225.00BV' },
+                { level: '8. 2SDSCROWN', bonus: '250.00BV' },
+                { level: '9. 3SDSCROWN', bonus: '275.00BV' }
+            ]
+        };
+
+        document.getElementById('countrySelector').addEventListener('change', function(e) {
+            const country = e.target.value;
+            const data = countryData[country] || countryData.malaysia;
+            const tbody = document.getElementById('bonusTableBody');
+            
+            tbody.innerHTML = data.map(item => `
+                <tr>
+                    <td>${item.level}</td>
+                    <td>${item.bonus}</td>
+                </tr>
+            `).join('');
+        });
+    </script>
+</body>
+</html>
